@@ -48,6 +48,13 @@ class Report
     yield(sec)
   end
 
+  def remove_section(section_name)
+    sec = Section.new(opts)
+    @remove_sections << sec
+
+    yield(sec)
+  end
+
   def add_image(name, path)
     @images[name] = path
   end
@@ -115,6 +122,10 @@ private
   def replace_sections!(content)
     @sections.each do |section|
       section.replace!(content)
+    end
+
+    @remove_sections.each do |section|
+      section.remove!(content)
     end
   end
 

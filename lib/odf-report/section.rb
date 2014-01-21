@@ -85,6 +85,12 @@ module ODFReport
 
     end # replace_section
 
+    def remove!(doc)
+      return unless section = find_section_node(doc)
+
+      section.remove
+    end # replace_section
+
   private
 
     def find_section_node(doc)
