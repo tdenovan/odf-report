@@ -15,6 +15,7 @@ class Report
     @images = {}
     @image_names_replacements = {}
     @sections = []
+    @remove_sections
 
     yield(self)
 
