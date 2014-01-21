@@ -48,7 +48,7 @@ class Report
     yield(sec)
   end
 
-  def remove_section(section_name)
+  def remove_section(section_name, opts={})
     sec = Section.new(opts)
     @remove_sections << sec
 
