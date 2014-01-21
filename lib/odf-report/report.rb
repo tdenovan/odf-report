@@ -50,6 +50,7 @@ class Report
   end
 
   def remove_section(section_name, opts={})
+    opts.merge!(:name => section_name)
     sec = Section.new(opts)
     @remove_sections << sec
   end
