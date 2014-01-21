@@ -52,8 +52,6 @@ class Report
   def remove_section(section_name, opts={})
     sec = Section.new(opts)
     @remove_sections << sec
-
-    yield(sec)
   end
 
   def add_image(name, path)
