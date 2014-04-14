@@ -72,9 +72,9 @@ class Report
 
         replace_sections!(doc)
         replace_tables!(doc)
-
+        
         find_image_name_matches(doc)
-        avoid_duplicate_image_names(doc)
+        # avoid_duplicate_image_names(doc) # This method produces unreadable xml files for me
 
       end
 
