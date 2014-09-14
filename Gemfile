@@ -1,3 +1,4 @@
 source 'https://rubygems.org'
 
-gem 'faker'
+# Specify your gem's dependencies in odf-report.gemspec
+gemspec

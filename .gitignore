@@ -1,5 +1,6 @@
 pkg
+pckg
 doc
 *.gem
 test/result
-test/result/*.odt
+Gemfile.lock
