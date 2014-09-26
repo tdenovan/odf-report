@@ -13,6 +13,7 @@ module ODFReport
         @output_stream = out
         yield self
       end
+
     end
 
     def update_files(*content_files, &block)
@@ -21,7 +22,7 @@ module ODFReport
 
         file.each do |entry|
 
-          next if entry.directory?
+          # next if entry.directory?
 
           entry.get_input_stream do |is|
 

@@ -23,7 +23,9 @@ module ODFReport
     private
 
     def find_text_node(doc)
+
       texts = doc.xpath(".//text:p[text()='#{to_placeholder}']")
+
       if texts.empty?
         texts = doc.xpath(".//text:p/text:span[text()='#{to_placeholder}']")
         if texts.empty?

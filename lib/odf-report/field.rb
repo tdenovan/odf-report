@@ -1,3 +1,5 @@
+require 'debugger'
+
 module ODFReport
   class Field
 

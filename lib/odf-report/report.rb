@@ -54,17 +54,17 @@ class Report
     sec = Section.new(opts)
     @remove_sections << sec
   end
-  
+
   # <<<<<<<<<<<<<<<<<<<
   # Changes by tdenovan
   # <<<<<<<<<<<<<<<<<<<
-  
+
   # Added by tdenovan
   def add_slide(slide_name, collection, insert_before_slide, opts={})
     opts.merge!(name: slide_name, collection: collection, insert_before_slide: insert_before_slide)
     slide = Slide.new(opts)
     @slides << slide
-    
+
     yield(slide)
   end
 
@@ -73,7 +73,7 @@ class Report
     slide = Slide.new(opts)
     @remove_slides << slide
   end
-  
+
   # <<<<<<<<<<<<<<<<<<<<<<<
   # End changes by tdenovan
   # <<<<<<<<<<<<<<<<<<<<<<<
@@ -86,7 +86,7 @@ class Report
 
     @file.update_content do |file|
 
-      file.update_files('content.xml', 'styles.xml') do |txt|
+      file.update_files('word/document.xml', 'word/styles.xml') do |txt|
 
         parse_document(txt) do |doc|
 
@@ -95,10 +95,11 @@ class Report
           @tables.each   { |t| t.replace!(doc) }
           @texts.each    { |t| t.replace!(doc) }
           @fields.each   { |f| f.replace!(doc) }
-        
+
           find_image_name_matches(doc)
+
           # avoid_duplicate_image_names(doc) # This method produces unreadable xml files for me
-          
+
           # CHANGED by tdenovan. We need a special call to remove template slides, as it can't be done in the replace method as other slides might rely on the template slide
           @slides.each  { |s| s.remove!(doc) }
 

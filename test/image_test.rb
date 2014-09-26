@@ -34,11 +34,12 @@ require 'faker'
 
     item = @items.pop
 
-    report = ODFReport::Report.new("test/templates/temp_text.docx") do |r|
+    report = ODFReport::Report.new("test/templates/temp_image.docx") do |r|
 
-      r.add_field("TAG", Faker::Company.name)
-      r.add_field("TAG_02", Faker::Company.catch_phrase)
+      # r.add_image("graphics1", File.join(Dir.pwd, 'test', 'templates', 'piriapolis.jpg'))
+      # find_image_name_matches('Picture 1')
+      r.add_image('IMAGE', File.join(Dir.pwd, 'test', 'templates', 'copy.jpeg'))
 
     end
 
-    report.generate("test/result/test_word_text.docx")
+    report.generate("test/result/test_image_word.docx")
