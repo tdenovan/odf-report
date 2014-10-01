@@ -3,71 +3,60 @@ require 'ostruct'
 require 'faker'
 require 'launchy'
 
+@col1 = []
 
-    @col1 = []
-    (1..100).each do |i|
-      @col1 << {:name=>"name #{i}",  :idx=>i,  :address=>"this is address #{i}"}
-    end
+100.times do |i|
+  @col1 << {
+    :name => Faker::Name.name,
+    :id => i,
+    :city => Faker::Address.city,
+    :address => Faker::Address.street_address
+  }
+end
 
+report = ODFReport::Report.new("test/templates/temp_table.docx") do |r|
 
-    @col2 = []
-    @col2 << OpenStruct.new({:name=>"josh harnet",   :idx=>"02", :address=>"testing <&> ",                 :phone=>99025668, :zip=>"90420-002"})
-    @col2 << OpenStruct.new({:name=>"sandro duarte", :idx=>"45", :address=>"address with &",               :phone=>88774451, :zip=>"90490-002"})
-    @col2 << OpenStruct.new({:name=>"ellen bicca",   :idx=>"77", :address=>"<address with escaped html>",  :phone=>77025668, :zip=>"94420-002"})
-    @col2 << OpenStruct.new({:name=>"luiz garcia",   :idx=>"88", :address=>"address with\nlinebreak",      :phone=>27025668, :zip=>"94520-025"})
+  r.add_field("HEAD_01", 'ID')
+  r.add_field("HEAD_02", 'Name')
+  r.add_field("HEAD_03", 'Address')
+  r.add_field("HEAD_04", 'City')
 
-    @col3, @col4, @col5 = [], [], []
+  r.add_table("TABLE_01", @col1, :header=>true) do |t|
+    t.add_column(:field_01, :id)
+    t.add_column(:field_02, :name)
+    t.add_column(:field_03, :address)
+    t.add_column(:field_04, :city)
+  end
 
+  # r.add_table("TABLE_02", @col2) do |t|
+  #   t.add_column(:field_04, :idx)
+  #   t.add_column(:field_05, :name)
+  #   t.add_column(:field_06, 'address')
+  #   t.add_column(:field_07, :phone)
+  #   t.add_column(:field_08, :zip)
+  # end
 
+  # r.add_table("TABLE_03", @col3, :header=>true) do |t|
+  #   t.add_column(:field_01, :idx)
+  #   t.add_column(:field_02, :name)
+  #   t.add_column(:field_03, :address)
+  # end
 
-    report = ODFReport::Report.new("test/templates/temp_table.docx") do |r|
+  # r.add_table("TABLE_04", @col4, :header=>true, :skip_if_empty => true) do |t|
+  #   t.add_column(:field_01, :idx)
+  #   t.add_column(:field_02, :name)
+  #   t.add_column(:field_03, :address)
+  # end
 
-      # r.add_field("HEADER_FIELD", "This field was in the HEADER")
+  # r.add_table("TABLE_05", @col5) do |t|
+  #   t.add_column(:field_01, :idx)
+  #   t.add_column(:field_02, :name)
+  #   t.add_column(:field_03, :address)
+  # end
 
-      # r.add_field("TAG_01", "New tag")
-      # r.add_field("TAG_02", "TAG-2 -> New tag")
+  # r.add_image("graphics1", File.join(Dir.pwd, 'test', 'templates', 'piriapolis.jpg'))
+  # r.add_image("graphics2", File.join(Dir.pwd, 'test', 'templates', 'rails.png'))
 
-      r.add_field('HEAD_01', 'Name')
-      r.add_field('HEAD_02', 'ID')
-      r.add_field('HEAD_03', 'Address')
-      r.add_field('HEAD_04', 'Field?')
+end
 
-      r.add_table("TABLE_01", @col1, :header=>true) do |t|
-        t.add_column(:field_01, :idx)
-        t.add_column(:field_02, :name)
-        t.add_column(:field_03, :address)
-      end
-
-      # r.add_table("TABLE_02", @col2) do |t|
-      #   t.add_column(:field_04, :idx)
-      #   t.add_column(:field_05, :name)
-      #   t.add_column(:field_06, 'address')
-      #   t.add_column(:field_07, :phone)
-      #   t.add_column(:field_08, :zip)
-      # end
-
-      # r.add_table("TABLE_03", @col3, :header=>true) do |t|
-      #   t.add_column(:field_01, :idx)
-      #   t.add_column(:field_02, :name)
-      #   t.add_column(:field_03, :address)
-      # end
-
-      # r.add_table("TABLE_04", @col4, :header=>true, :skip_if_empty => true) do |t|
-      #   t.add_column(:field_01, :idx)
-      #   t.add_column(:field_02, :name)
-      #   t.add_column(:field_03, :address)
-      # end
-
-      # r.add_table("TABLE_05", @col5) do |t|
-      #   t.add_column(:field_01, :idx)
-      #   t.add_column(:field_02, :name)
-      #   t.add_column(:field_03, :address)
-      # end
-
-      # r.add_image("graphics1", File.join(Dir.pwd, 'test', 'templates', 'piriapolis.jpg'))
-      # r.add_image("graphics2", File.join(Dir.pwd, 'test', 'templates', 'rails.png'))
-
-    end
-
-
-    report.generate("test/result/test_word_table.docx")
+report.generate("test/result/test_word_table.docx")

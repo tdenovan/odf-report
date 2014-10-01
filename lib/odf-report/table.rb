@@ -26,7 +26,8 @@ class Table
 
       @template_rows = table.xpath("//w:tr")
 
-      @header = table.xpath("//w:tblHeader").empty? ? @header : false
+      # Disabling the below because it creates an odd effect on the table
+      # @header = table.xpath("//w:tblHeader").empty? ? @header : false
 
       @collection = get_collection_from_item(row, @collection_field) if row
 
@@ -71,8 +72,7 @@ private
   end
 
   def get_start_node
-    # @header ? 1 : 0
-    0
+    @header ? 1 : 0
   end
 
   def template_length
@@ -80,17 +80,6 @@ private
   end
 
   def find_table_node(doc)
-
-    # list_of_tables = {}
-    # if doc.xpath("//w:tbl").any?
-    #   doc.xpath("//w:tbl").each do |node|
-    #     node.xpath("//w:tblCaption").each do |name|
-    #       list_of_tables[name.attributes['val'].value] = node
-    #     end
-    #   end
-    # end
-    # tables = [list_of_tables[@name]]
-
 
     tables = doc.xpath("//w:tbl[w:tblPr[//w:tblCaption[@w:val='TABLE_01']]]")
 

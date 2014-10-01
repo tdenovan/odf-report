@@ -15,7 +15,8 @@ class Report
     @slides = []
     @remove_sections = []
     @remove_slides = []
-    # image related variables
+
+    # Image related variables
     @image_names_replacements = {}
     @image_name_id = {} # Creating a hash of image names and linking them with their id
     @image_id_paths = {}

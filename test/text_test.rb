@@ -2,44 +2,41 @@ require './lib/odf-report'
 require 'faker'
 
 
-  class Item
-    attr_accessor :name, :inner_text
-    def initialize(_name,  _text)
-      @name=_name
-      @inner_text=_text
-    end
-  end
+# class Item
+#   attr_accessor :name, :inner_text
+#   def initialize(_name,  _text)
+#     @name=_name
+#     @inner_text=_text
+#   end
+# end
 
+# @items = []
+# 3.times do
 
+#   text = <<-HTML
+#     <p>#{Faker::Lorem.sentence} <em>#{Faker::Lorem.sentence}</em> #{Faker::Lorem.sentence}</p>
+#     <p>#{Faker::Lorem.sentence} <strong>#{Faker::Lorem.paragraph(3)}</strong> #{Faker::Lorem.sentence}</p>
+#     <p>#{Faker::Lorem.paragraph}</p>
+#     <blockquote>
+#       <p>#{Faker::Lorem.paragraph}</p>
+#       <p>#{Faker::Lorem.paragraph}</p>
+#     </blockquote>
+#     <p style="margin: 150px">#{Faker::Lorem.paragraph}</p>
+#     <p>#{Faker::Lorem.paragraph}</p>
+#   HTML
 
-    @items = []
-    3.times do
+#   @items << Item.new(Faker::Name.name, text)
 
-      text = <<-HTML
-        <p>#{Faker::Lorem.sentence} <em>#{Faker::Lorem.sentence}</em> #{Faker::Lorem.sentence}</p>
-        <p>#{Faker::Lorem.sentence} <strong>#{Faker::Lorem.paragraph(3)}</strong> #{Faker::Lorem.sentence}</p>
-        <p>#{Faker::Lorem.paragraph}</p>
-        <blockquote>
-          <p>#{Faker::Lorem.paragraph}</p>
-          <p>#{Faker::Lorem.paragraph}</p>
-        </blockquote>
-        <p style="margin: 150px">#{Faker::Lorem.paragraph}</p>
-        <p>#{Faker::Lorem.paragraph}</p>
-      HTML
+# end
 
-      @items << Item.new(Faker::Name.name, text)
+# item = @items.pop
 
-    end
+report = ODFReport::Report.new("test/templates/temp_text.docx") do |r|
 
+  r.add_field("TAG_01", Faker::Company.name)
+  r.add_field("TAG_02", Faker::Company.catch_phrase)
+  r.add_field("TAG_03", Faker::Company.duns_number)
 
-    item = @items.pop
+end
 
-    report = ODFReport::Report.new("test/templates/temp_text.docx") do |r|
-
-      r.add_field("TAG_01", Faker::Company.name)
-      r.add_field("TAG_02", Faker::Company.catch_phrase)
-      r.add_field("TAG_03", Faker::Company.duns_number)
-
-    end
-
-    report.generate("test/result/test_word_text.docx")
+report.generate("test/result/test_word_text.docx")
