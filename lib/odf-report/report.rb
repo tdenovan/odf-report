@@ -11,11 +11,14 @@ class Report
     @fields = []
     @tables = []
     @images = {}
-    @image_names_replacements = {}
     @sections = []
     @slides = []
     @remove_sections = []
     @remove_slides = []
+    # image related variables
+    @image_names_replacements = {}
+    @image_name_id = {} # Creating a hash of image names and linking them with their id
+    @image_id_paths = {}
 
     yield(self)
 
@@ -86,7 +89,7 @@ class Report
 
     @file.update_content do |file|
 
-      file.update_files('word/document.xml', 'word/styles.xml') do |txt|
+      file.update_files('word/document.xml', 'word/styles.xml', 'word/_rels/document.xml.rels') do |txt|
 
         parse_document(txt) do |doc|
 
