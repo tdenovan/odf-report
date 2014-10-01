@@ -42,4 +42,4 @@ require 'faker'
 
     end
 
-    report.generate("test/result/test_image_word.docx")
+    report.generate("test/result/test_word_image.docx")

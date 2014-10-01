@@ -18,6 +18,7 @@ module ODFReport
         elsif content.namespaces.include? 'xmlns:w' and content.xpath("//w:drawing").any? # Looking through word/document.xml
 
           @image_name_id[image_name] = content.xpath("//w:drawing//wp:docPr[@title='#{image_name}']/following-sibling::*").xpath("//a:blip", {'a' => "http://schemas.openxmlformats.org/drawingml/2006/main"}).attr('embed').value
+
         end
 
 

@@ -12,6 +12,10 @@ task :test_text do
   require './test/text_test.rb'
 end
 
+task :test_table do
+  require './test/tables_test.rb'
+end
+
 task :open do
   Dir.glob('./test/result/*.odt').each { |file| Launchy.open(file) }
 end

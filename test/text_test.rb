@@ -36,8 +36,9 @@ require 'faker'
 
     report = ODFReport::Report.new("test/templates/temp_text.docx") do |r|
 
-      r.add_field("TAG", Faker::Company.name)
+      r.add_field("TAG_01", Faker::Company.name)
       r.add_field("TAG_02", Faker::Company.catch_phrase)
+      r.add_field("TAG_03", Faker::Company.duns_number)
 
     end
 

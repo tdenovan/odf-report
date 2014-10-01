@@ -5,7 +5,7 @@ require 'launchy'
 
 
     @col1 = []
-    (1..40).each do |i|
+    (1..100).each do |i|
       @col1 << {:name=>"name #{i}",  :idx=>i,  :address=>"this is address #{i}"}
     end
 
@@ -14,7 +14,7 @@ require 'launchy'
     @col2 << OpenStruct.new({:name=>"josh harnet",   :idx=>"02", :address=>"testing <&> ",                 :phone=>99025668, :zip=>"90420-002"})
     @col2 << OpenStruct.new({:name=>"sandro duarte", :idx=>"45", :address=>"address with &",               :phone=>88774451, :zip=>"90490-002"})
     @col2 << OpenStruct.new({:name=>"ellen bicca",   :idx=>"77", :address=>"<address with escaped html>",  :phone=>77025668, :zip=>"94420-002"})
-    @col2 << OpenStruct.new({:name=>"luiz garcia",   'idx'=>"88", :address=>"address with\nlinebreak",      :phone=>27025668, :zip=>"94520-025"})
+    @col2 << OpenStruct.new({:name=>"luiz garcia",   :idx=>"88", :address=>"address with\nlinebreak",      :phone=>27025668, :zip=>"94520-025"})
 
     @col3, @col4, @col5 = [], [], []
 
@@ -27,10 +27,15 @@ require 'launchy'
       # r.add_field("TAG_01", "New tag")
       # r.add_field("TAG_02", "TAG-2 -> New tag")
 
+      r.add_field('HEAD_01', 'Name')
+      r.add_field('HEAD_02', 'ID')
+      r.add_field('HEAD_03', 'Address')
+      r.add_field('HEAD_04', 'Field?')
+
       r.add_table("TABLE_01", @col1, :header=>true) do |t|
         t.add_column(:field_01, :idx)
         t.add_column(:field_02, :name)
-        t.add_column(:address)
+        t.add_column(:field_03, :address)
       end
 
       # r.add_table("TABLE_02", @col2) do |t|

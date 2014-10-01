@@ -19,36 +19,39 @@ class Table
 
   def replace!(doc, row = nil)
 
-    return unless table = find_table_node(doc)
+    if doc.namespaces.include? 'xmlns:w' # Look through document.xml
 
-    @template_rows = table.xpath("table:table-row")
-
-    @header = table.xpath("table:table-header-rows").empty? ? @header : false
+      return unless table = find_table_node(doc)
 
 
-    @collection = get_collection_from_item(row, @collection_field) if row
+      @template_rows = table.xpath("//w:tr")
 
-    if @skip_if_empty && @collection.empty?
-      table.remove
-      return
-    end
+      @header = table.xpath("//w:tblHeader").empty? ? @header : false
 
-    @collection.each do |data_item|
+      @collection = get_collection_from_item(row, @collection_field) if row
 
-      new_node = get_next_row
+      if @skip_if_empty && @collection.empty?
+        table.remove
+        return
+      end
 
-      @tables.each    { |t| t.replace!(new_node, data_item) }
+      @collection.each do |data_item|
 
-      @texts.each     { |t| t.replace!(new_node, data_item) }
+        new_node = get_next_row
+        @tables.each    { |t| t.replace!(new_node, data_item) }
 
-      @fields.each    { |f| f.replace!(new_node, data_item) }
+        @texts.each     { |t| t.replace!(new_node, data_item) }
 
-      table.add_child(new_node)
+        @fields.each    { |f| f.replace!(new_node, data_item) }
 
-    end
+        table.add_child(new_node)
 
-    @template_rows.each_with_index do |r, i|
-      r.remove if (get_start_node..template_length) === i
+      end
+
+      @template_rows.each_with_index do |r, i|
+        r.remove if (get_start_node..template_length) === i
+      end
+
     end
 
   end # replace
@@ -68,7 +71,8 @@ private
   end
 
   def get_start_node
-    @header ? 1 : 0
+    # @header ? 1 : 0
+    0
   end
 
   def template_length
@@ -77,7 +81,18 @@ private
 
   def find_table_node(doc)
 
-    tables = doc.xpath(".//table:table[@table:name='#{@name}']")
+    # list_of_tables = {}
+    # if doc.xpath("//w:tbl").any?
+    #   doc.xpath("//w:tbl").each do |node|
+    #     node.xpath("//w:tblCaption").each do |name|
+    #       list_of_tables[name.attributes['val'].value] = node
+    #     end
+    #   end
+    # end
+    # tables = [list_of_tables[@name]]
+
+
+    tables = doc.xpath("//w:tbl[w:tblPr[//w:tblCaption[@w:val='TABLE_01']]]")
 
     tables.empty? ? nil : tables.first
 
