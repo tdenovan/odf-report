@@ -16,6 +16,10 @@ task :test_table do
   require './test/tables_test.rb'
 end
 
+task :test_piechart do
+  require './test/piechart_test.rb'
+end
+
 task :open do
   Dir.glob('./test/result/*.odt').each { |file| Launchy.open(file) }
 end

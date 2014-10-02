@@ -81,7 +81,7 @@ private
 
   def find_table_node(doc)
 
-    tables = doc.xpath("//w:tbl[w:tblPr[//w:tblCaption[@w:val='TABLE_01']]]")
+    tables = doc.xpath("//w:tbl[w:tblPr[//w:tblCaption[@w:val='#{@name}']]]")
 
     tables.empty? ? nil : tables.first
 

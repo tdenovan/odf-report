@@ -15,6 +15,7 @@ class Report
     @slides = []
     @remove_sections = []
     @remove_slides = []
+    @charts = []
 
     # Image related variables
     @image_names_replacements = {}
@@ -43,6 +44,12 @@ class Report
     @tables << tab
 
     yield(tab)
+  end
+
+  def add_chart(chart_name, collection, opts={})
+    opts.merge!(:name => chart_name, :collection => collection,)
+    chart = Chart.new(opts)
+    @charts << chart
   end
 
   def add_section(section_name, collection, opts={})
@@ -90,7 +97,7 @@ class Report
 
     @file.update_content do |file|
 
-      file.update_files('word/document.xml', 'word/styles.xml', 'word/_rels/document.xml.rels') do |txt|
+      file.update_files('word/document.xml', 'word/charts/chart1.xml', 'word/_rels/document.xml.rels') do |txt|
 
         parse_document(txt) do |doc|
 
@@ -99,6 +106,7 @@ class Report
           @tables.each   { |t| t.replace!(doc) }
           @texts.each    { |t| t.replace!(doc) }
           @fields.each   { |f| f.replace!(doc) }
+          @charts.each   { |c| c.replace!(doc) }
 
           find_image_name_matches(doc)
 

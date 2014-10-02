@@ -25,6 +25,14 @@ module ODFReport
       yield(tab)
     end
 
+    def add_chart(chart_name, collection, opts={})
+      opts.merge!(:name => chart_name, :collection => collection)
+      chart = Chart.new(opts)
+      @charts << chart
+
+      yield(chart)
+    end
+
     def add_section(section_name, collection_field, opts={})
       opts.merge!(:name => section_name, :collection_field => collection_field)
       sec = Section.new(opts)
