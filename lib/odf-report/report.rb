@@ -23,9 +23,8 @@ class Report
     @image_id_paths = {}
 
     # Chart related variables
-    # @chart_id_path = {}
-    # @chart_name_id = {}
-
+    $id_target = {}
+    $name_id = {}
 
     yield(self)
 

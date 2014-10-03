@@ -50,7 +50,7 @@ module ODFReport
       # ************************
         file.output_stream.put_next_entry(template_image)
         file.output_stream.write ::File.read(path)
-        # Code not working how we want it. Must replace method
+        # Code not working how we want it. Corrupting the file. Must replace method
       # ************************
       end
 
