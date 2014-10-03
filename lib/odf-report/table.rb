@@ -13,7 +13,7 @@ class Table
     @tables = []
 
     @template_rows = []
-    @header           = opts[:header] || false
+    @header           = opts[:header] || true
     @skip_if_empty    = opts[:skip_if_empty] || false
   end
 
@@ -23,8 +23,7 @@ class Table
 
       return unless table = find_table_node(doc)
 
-
-      @template_rows = table.xpath("//w:tr")
+      @template_rows = table.xpath(".//w:tr")
 
       # Disabling the below because it creates an odd effect on the table
       # @header = table.xpath("//w:tblHeader").empty? ? @header : false
@@ -81,7 +80,7 @@ private
 
   def find_table_node(doc)
 
-    tables = doc.xpath("//w:tbl[w:tblPr[//w:tblCaption[@w:val='#{@name}']]]")
+    tables = doc.xpath("//w:tbl[w:tblPr[w:tblCaption[@w:val='#{@name}']]]")
 
     tables.empty? ? nil : tables.first
 

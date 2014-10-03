@@ -22,6 +22,11 @@ class Report
     @image_name_id = {} # Creating a hash of image names and linking them with their id
     @image_id_paths = {}
 
+    # Chart related variables
+    # @chart_id_path = {}
+    # @chart_name_id = {}
+
+
     yield(self)
 
   end
@@ -47,7 +52,7 @@ class Report
   end
 
   def add_chart(chart_name, collection, opts={})
-    opts.merge!(:name => chart_name, :collection => collection,)
+    opts.merge!(:name => chart_name, :collection => collection)
     chart = Chart.new(opts)
     @charts << chart
   end
@@ -97,7 +102,7 @@ class Report
 
     @file.update_content do |file|
 
-      file.update_files('word/document.xml', 'word/charts/chart1.xml', 'word/_rels/document.xml.rels') do |txt|
+      file.update_files('word/document.xml', 'word/charts/chart2.xml', 'word/charts/chart1.xml', 'word/_rels/document.xml.rels') do |txt|
 
         parse_document(txt) do |doc|
 

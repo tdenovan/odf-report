@@ -17,7 +17,11 @@ module ODFReport
 
         elsif content.namespaces.include? 'xmlns:w' and content.xpath("//w:drawing").any? # Looking through word/document.xml
 
-          @image_name_id[image_name] = content.xpath("//w:drawing//wp:docPr[@title='#{image_name}']/following-sibling::*").xpath("//a:blip", {'a' => "http://schemas.openxmlformats.org/drawingml/2006/main"}).attr('embed').value
+          content.xpath("//w:drawing//wp:docPr[@title='#{image_name}']/following-sibling::*").xpath(".//a:blip", {'a' => "http://schemas.openxmlformats.org/drawingml/2006/main"}).each do |img|
+            @image_name_id[image_name] = img.attributes['embed'].value
+          end
+
+          # @image_name_id[image_name] = content.xpath("//w:drawing//wp:docPr[@title='#{image_name}']/following-sibling::*").xpath(".//a:blip", {'a' => "http://schemas.openxmlformats.org/drawingml/2006/main"}).attributes['embed'].value
 
         end
 
@@ -42,13 +46,12 @@ module ODFReport
         @image_names_replacements[path] = ::File.join(IMAGE_DIR_NAME, ::File.basename(@image_id_paths[@image_name_id[name]]))
       end
 
-      # debugger
-
-      @image_names_replacements.each_pair do |path, template_image|
-
+      @image_names_replacements.each do |path, template_image|
+      # ************************
         file.output_stream.put_next_entry(template_image)
         file.output_stream.write ::File.read(path)
-
+        # Code not working how we want it. Must replace method
+      # ************************
       end
 
     end # replace_images
