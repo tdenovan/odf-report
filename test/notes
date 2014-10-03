@@ -1,0 +1,4 @@
+- Images is not responding in the way I'd like. Creating unreadable format. Must revise the method.
+
+Line: 32(chart.rb)
+- Charts need an ordering. The one currently in place doesn't work properly. Must figure out how to obtain the file name.
