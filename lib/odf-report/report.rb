@@ -36,6 +36,10 @@ class Report
     @fields << field
   end
 
+  alias_method :add_header, :add_field
+  alias_method :add_title, :add_field
+  alias_method :add_series, :add_field
+
   def add_text(field_tag, value='')
     opts = {:name => field_tag, :value => value}
     text = Text.new(opts)
