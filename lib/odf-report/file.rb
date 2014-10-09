@@ -25,15 +25,16 @@ module ODFReport
           # next if entry.directory?
 
           entry.get_input_stream do |is|
-
             data = is.sysread
 
             if content_files.include?(entry.name) or content_files.select { |filename| filename.is_a? Regexp and filename =~ entry.name }.count >= 1
               yield data, entry.name
             end
 
-            @output_stream.put_next_entry(entry.name)
-            @output_stream.write data
+            unless entry.name.include? Images::IMAGE_DIR_NAME # do not write images, these will be written later
+              @output_stream.put_next_entry(entry.name)
+              @output_stream.write data
+            end
 
           end
 
@@ -41,6 +42,22 @@ module ODFReport
 
       end
 
+    end
+
+    # Returns access to a file stream
+    def read_files(&block)
+      Zip::File.open(@template) do |file|
+        file.each do |entry|
+          yield entry
+        end
+      end
+    end # update file stream
+
+    def delete_files(*paths, zipfile_path)
+      Zip::File.open(zipfile_path, Zip::File::CREATE) do |file|
+        debugger
+        paths.each { |path| file.remove(path) }
+      end
     end
 
     def data

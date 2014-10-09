@@ -18,13 +18,8 @@ class Report
     @charts = []
 
     # Image related variables
-    @image_names_replacements = {}
-    @image_name_id = {} # Creating a hash of image names and linking them with their id
-    @image_id_paths = {}
-
-    # Chart related variables
-    $id_target = {}
-    $name_id = {}
+    @image_paths = {} # Mapping of replacement image paths to the existing image paths in the document
+    @image_ids = {} # Creating a hash of image names and linking them with their id
 
     yield(self)
 
@@ -116,7 +111,7 @@ class Report
           @fields.each   { |f| f.replace!(doc) }
           @charts.each   { |c| c.replace!(doc, filename) }
 
-          find_image_name_matches(doc)
+          find_image_ids_and_paths(doc)
 
           # avoid_duplicate_image_names(doc) # This method produces unreadable xml files for me
 
@@ -127,15 +122,14 @@ class Report
 
       end
 
-      replace_images(file)
+      create_images(file)
 
     end
 
-    if dest
-      ::File.open(dest, "wb") {|f| f.write(@file.data) }
-    else
-      @file.data
-    end
+    # Write the docx file
+    ::File.open(dest, "wb") {|f| f.write(@file.data) }
+
+    # delete_old_images(@file, dest)
 
   end
 
