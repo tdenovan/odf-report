@@ -15,6 +15,20 @@ things = {
   'Doggy' => rand(1..10)
 }
 
+bar = {
+  'Elephant' => [rand(1..10), rand(1..10), rand(1..10)],
+  'Fudge' => [rand(1..10), rand(1..10), rand(1..10)],
+  'Google' => [rand(1..10), rand(1..10), rand(1..10)],
+  'Hippo' => [rand(1..10), rand(1..10), rand(1..10)]
+}
+
+column = {
+  'Io' => [rand(1..10), rand(1..10), rand(1..10)],
+  'Jiggly' => [rand(1..10), rand(1..10), rand(1..10)],
+  'Kinky' => [rand(1..10), rand(1..10), rand(1..10)],
+  'Loop' => [rand(1..10), rand(1..10), rand(1..10)]
+}
+
 @col1 = []
 10.times do |i|
   @col1 << {
@@ -43,10 +57,25 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
   r.add_field("TEXT_02", Faker::Company.catch_phrase)
 
   # Chart
-  r.add_field("CHART_01", "New Chart Name")
+  r.add_title("TITLE_01", "New Chart Name")
+  r.add_series("QUANTITY", "Another Chart Name")
   r.add_chart("CHART_01", alphabet)
-  r.add_field("SOME TITLE", "HORRAY")
+
+  r.add_title("TITLE_02", "Woot")
+  r.add_series("SOME TITLE", "Horray")
   r.add_chart("CHART_02", things)
+
+  r.add_series("SERIES_21", "Ababa")
+  r.add_series("SERIES_22", "Babab")
+  r.add_series("SERIES_23", "Cababa")
+  r.add_chart("CHART_03", bar)
+
+  r.add_series("SERIES_31", "Dababa")
+  r.add_series("SERIES_32", "Ebabab")
+  r.add_series("SERIES_33", "Fababa")
+  r.add_chart("CHART_04", column)
+
+
 
   # Image
   # r.add_image('IMAGE_01', File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg'))

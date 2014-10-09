@@ -28,8 +28,8 @@ module ODFReport
 
             data = is.sysread
 
-            if content_files.include?(entry.name)
-              yield data
+            if content_files.include?(entry.name) or content_files.select { |filename| filename.is_a? Regexp and filename =~ entry.name }.count >= 1
+              yield data, entry.name
             end
 
             @output_stream.put_next_entry(entry.name)

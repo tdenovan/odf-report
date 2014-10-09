@@ -105,7 +105,7 @@ class Report
 
     @file.update_content do |file|
 
-      file.update_files('word/document.xml', 'word/charts/chart2.xml', 'word/charts/chart1.xml', 'word/_rels/document.xml.rels') do |txt|
+      file.update_files('word/document.xml', /chart/, 'word/_rels/document.xml.rels') do |txt, filename|
 
         parse_document(txt) do |doc|
 
@@ -114,7 +114,7 @@ class Report
           @tables.each   { |t| t.replace!(doc) }
           @texts.each    { |t| t.replace!(doc) }
           @fields.each   { |f| f.replace!(doc) }
-          @charts.each   { |c| c.replace!(doc) }
+          @charts.each   { |c| c.replace!(doc, filename) }
 
           find_image_name_matches(doc)
 
@@ -145,6 +145,7 @@ private
     doc = Nokogiri::XML(txt)
     yield doc
     txt.replace(doc.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML))
+
   end
 
 end

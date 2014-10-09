@@ -20,20 +20,20 @@ task :test_pchart do
   require './test/test_pchart.rb'
 end
 
+task :test_columnchart do
+  require './test/test_columnchart.rb'
+end
+
+task :test_barchart do
+  require './test/test_barchart.rb'
+end
+
+task :test_wchart do
+  require './test/test_wchart.rb'
+end
+
 task :test_all do
   require './test/test_all.rb'
-end
-
-task :test_ugly_table do
-  require './test/test_ugly_table.rb'
-end
-
-task :test_ugly_image do
-  require './test/test_ugly_image.rb'
-end
-
-task :test_ugly_all do
-  require './test/test_ugly_all.rb'
 end
 
 task :open do
