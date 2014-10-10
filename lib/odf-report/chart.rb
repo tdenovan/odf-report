@@ -114,22 +114,22 @@ class Chart
         output['base'] << num
       elsif index == input.length - 1
         output['base'] << sum
-      elsif num > 0 and sum > 0
+      elsif num >= 0 and sum >= 0
         output['fill'] << sum
         output['pro+'] << num
-      elsif num > 0 and sum < 0 and num < sum
-        output['fill'] << sum - num
+      elsif num >= 0 and sum < 0 and sum + num < 0
+        output['fill'] << sum + num
         output['pro-'] << - num
-      elsif num > 0 and sum < 0 and num > sum
+      elsif num >= 0 and sum < 0 and sum + num >= 0
         output['pro+'] << sum + num
         output['pro-'] << sum
       elsif num < 0 and sum < 0
         output['fill'] << sum
         output['con-'] << num
-      elsif num < 0 and sum > 0 and sum + num > 0
+      elsif num < 0 and sum >= 0 and sum + num >= 0
         output['fill'] << sum + num
         output['con+'] << - num
-      elsif num < 0 and sum > 0 and sum + num < 0
+      elsif num < 0 and sum >= 0 and sum + num < 0
         output['con+'] << sum
         output['con-'] << sum + num
       end

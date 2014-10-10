@@ -6,5 +6,5 @@ Please write the following tests for images
  2. images titles should not be case sensitive (e.g. uppercase / lowercase or a mix should be able to be used with add_image)
  3. write a test with multiple images
  4. write a test where the word file has other content in the word/media folder (i.e. non-images)
- 5. what happens if add_image is called but no image exists in the word document - this should be handled gracefully
+*5. what happens if add_image is called but no image exists in the word document - this should be handled gracefully
  6. handling instances where there are 2 images in the word doc, with different titles, but they are linked to the same image in the word/media folder. In this case we can't simply replace 1 image, we need to insert a new image as well.
