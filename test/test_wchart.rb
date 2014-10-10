@@ -2,11 +2,13 @@ require './lib/odf-report'
 require 'faker'
 
 alphabet = {
-  'Start' => 30,
-  'Q1' => rand(-10..20),
-  'Q2' => rand(-10..20),
-  'Q3' => rand(-10..20),
-  'Q4' => rand(-10..20)
+  'Start' => 20,
+  'Jan' => 10,
+  'Feb' => -20,
+  'Mar' => -20,
+  'Apr' => -10,
+  'May' => 30,
+  'Jun' => 20
 }
 
 report = ODFReport::Report.new("test/templates/temp_wchart.docx") do |r|

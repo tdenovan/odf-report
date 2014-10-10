@@ -27,11 +27,11 @@ class Chart
 
       @@name_id[@name] = doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"}).attr('id').value
 
-    elsif doc.namespaces.include? 'xmlns:c' # Look through chart1.xml
+    elsif doc.namespaces.include? 'xmlns:c' # Look through chart.xml
 
       if filename.include? @@id_target[@@name_id[@name]]
 
-        if doc.namespaces.include? 'xmlns:c' and doc.xpath("//c:pieChart").any?
+        if doc.namespaces.include? 'xmlns:c' and doc.xpath("//c:pieChart").any? # For Pie Charts
 
           doc.xpath("//c:cat//c:v").each_with_index do |node, index|
             node.content = @collection.keys[index]
@@ -41,9 +41,9 @@ class Chart
             node.content = @collection.values[index]
           end
 
-        elsif doc.xpath("//c:grouping").attr('val').value.nil? == false # For waterfall charts
+        elsif doc.xpath("//c:grouping").attr('val').value.nil? == false # For Waterfall charts
 
-          output = rearrange
+          output = rearrange_waterfall
 
           doc.xpath("//c:cat").xpath(".//c:v").each_with_index do |node, index|
 
@@ -63,7 +63,7 @@ class Chart
             node.content = output.values[series][index]
           end
 
-        elsif doc.namespaces.include? 'xmlns:c' and doc.xpath("//c:barChart").any?
+        elsif doc.namespaces.include? 'xmlns:c' and doc.xpath("//c:barChart").any? # For Bar/Column Charts
 
           doc.xpath("//c:cat").xpath(".//c:v").each_with_index do |node, index|
 
@@ -95,41 +95,50 @@ class Chart
 
   private
 
-  def rearrange
+  def rearrange_waterfall
     input = @collection.values
     output = {
-      :fill => [],
-      :base => [],
-      :more => [],
-      :less => []
+      'fill' => [],
+      'base' => [],
+      'pro+' => [],
+      'pro-' => [],
+      'con+' => [],
+      'con-' => []
     }
     input << 0
+    sum = 0
+
     input.each_with_index do |num, index|
+
       if index == 0
-        output[:fill] << 0
-        output[:base] << num
-        output[:more] << 0
-        output[:less] << 0
+        output['base'] << num
       elsif index == input.length - 1
-        output[:base] << output[:fill].last + output[:more].last if output[:more].last > 0
-        output[:base] << output[:fill].last if output[:less].last > 0
-        output[:fill] << 0
-        output[:more] << 0
-        output[:less] << 0
-      elsif num >= 0
-        output[:fill] << (output[:fill].last + output[:base].last + output[:more].last)
-        output[:base] << 0
-        output[:more] << num
-        output[:less] << 0
-      elsif num < 0
-        output[:fill] << (output[:fill].last + output[:base].last + output[:more].last + num)
-        output[:base] << 0
-        output[:more] << 0
-        output[:less] << - num
+        output['base'] << sum
+      elsif num > 0 and sum > 0
+        output['fill'] << sum
+        output['pro+'] << num
+      elsif num > 0 and sum < 0 and num < sum
+        output['fill'] << sum - num
+        output['pro-'] << - num
+      elsif num > 0 and sum < 0 and num > sum
+        output['pro+'] << sum + num
+        output['pro-'] << sum
+      elsif num < 0 and sum < 0
+        output['fill'] << sum
+        output['con-'] << num
+      elsif num < 0 and sum > 0 and sum + num > 0
+        output['fill'] << sum + num
+        output['con+'] << - num
+      elsif num < 0 and sum > 0 and sum + num < 0
+        output['con+'] << sum
+        output['con-'] << sum + num
       end
+
+      length = output.values.sort_by { |x| x.length }.last.length
+      output.values.each { |arr| arr << 0 if arr.length < length }
+      sum += num
     end
 
-    puts output
     output
   end
 
