@@ -5,21 +5,6 @@ module ODFReport
     IMAGE_DIR_NAME = "word/media"
     RELS_FILE = "word/_rels/document.xml.rels"
 
-    def find_image_ids_and_paths(content)
-      @images.each_pair do |image_name, path|
-
-        if content.namespaces.include? 'xmlns' and content.xpath("//xmlns:Relationship").any? # Looking through word/_rels/document.xml.rels
-          content.xpath("//xmlns:Relationship").each do |rel|
-            @image_paths[rel.attr('Id')] = rel.attr('Target') # save image paths as a hash of 'id' => 'docx-image-path'
-          end
-        elsif content.namespaces.include? 'xmlns:w' and content.xpath("//w:drawing").any? # Looking through word/document.xml
-          content.xpath("//w:drawing//wp:docPr[@title='#{image_name}']/following-sibling::*").xpath(".//a:blip", {'a' => "http://schemas.openxmlformats.org/drawingml/2006/main"}).each do |img|
-            @image_ids[image_name] = img.attributes['embed'].value # save as a hash of 'image-name' => 'id'
-          end
-        end
-      end # image looop
-    end # find_and_replace_image_names method
-
     # Writes images to the zip file - this includes images that are not being replaced, as the File class was modified so that not files in the word/media directory are written (in case the files is being replaced in this method and would be overwritten)
     # CHANGED - previously, all files in the word/media directory were written to the zip. Then, in this method, any images being replaced were overwritten. That approach caused the zip to have an invalid header. The revised approach is to write all files in the word/media directory once, and substitute any images being replaced at the time of the first (and only) writing
     # TODO should also delete old images

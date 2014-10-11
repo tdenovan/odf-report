@@ -3,8 +3,8 @@ require 'faker'
 
 report = ODFReport::Report.new("test/templates/temp_image.docx") do |r|
 
-  r.add_image('IMAGE', File.join(Dir.pwd, 'test', 'templates', 'image.jpeg'))
-  r.add_image('IMAGE2', File.join(Dir.pwd, 'test', 'templates', 'chart.jpg'))
+  r.add_image('IMAGE', File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg'))
+  r.add_image('IMAGE2', File.join(Dir.pwd, 'test', 'templates', 'copy.jpeg'))
 
 end
 

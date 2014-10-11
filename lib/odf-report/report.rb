@@ -1,8 +1,7 @@
 module ODFReport
 
 class Report
-  include Images
-
+  
   def initialize(template_name, &block)
 
     @file = ODFReport::File.new(template_name)
@@ -10,16 +9,15 @@ class Report
     @texts = []
     @fields = []
     @tables = []
-    @images = {}
     @sections = []
     @slides = []
     @remove_sections = []
     @remove_slides = []
     @charts = []
-
-    # Image related variables
-    @image_paths = {} # Mapping of replacement image paths to the existing image paths in the document
-    @image_ids = {} # Creating a hash of image names and linking them with their id
+    
+    # Manager singleton classes
+    @relationship_manager = ODFReport::RelationshipManager.new(@file)
+    @image_manager = ODFReport::ImageManager.new(@relationship_manager, @file)
 
     yield(self)
 
@@ -43,7 +41,7 @@ class Report
 
   def add_table(table_name, collection, opts={})
     opts.merge!(:name => table_name, :collection => collection)
-    tab = Table.new(opts)
+    tab = Table.new(opts, @image_manager)
     @tables << tab
 
     yield(tab)
@@ -93,16 +91,19 @@ class Report
   # <<<<<<<<<<<<<<<<<<<<<<<
 
   def add_image(name, path)
-    @images[name] = path
+    @image_manager.add_existing_image(name, path)
   end
 
   def generate(dest = nil)
 
     @file.update_content do |file|
 
-      file.update_files('word/document.xml', /chart/, 'word/_rels/document.xml.rels') do |txt, filename|
+      file.update_files('word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE) do |txt, filename|
 
         parse_document(txt) do |doc|
+          @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
+          
+          @image_manager.find_image_ids(doc)
 
           @slides.each   { |s| s.replace!(doc) }
           @sections.each { |s| s.replace!(doc) }
@@ -111,10 +112,6 @@ class Report
           @fields.each   { |f| f.replace!(doc) }
           @charts.each   { |c| c.replace!(doc, filename) }
 
-          find_image_ids_and_paths(doc)
-
-          # avoid_duplicate_image_names(doc) # This method produces unreadable xml files for me
-
           # CHANGED by tdenovan. We need a special call to remove template slides, as it can't be done in the replace method as other slides might rely on the template slide
           @slides.each  { |s| s.remove!(doc) }
 
@@ -122,8 +119,8 @@ class Report
 
       end
 
-      create_images(file)
-
+      @relationship_manager.write_new_relationships
+      @image_manager.write_images
     end
 
     # Write the docx file

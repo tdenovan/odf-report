@@ -5,10 +5,11 @@ require 'launchy'
 
 @col1 = []
 
-100.times do |i|
+3.times do |i|
+  image = i < 2 ? File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg') : File.join(Dir.pwd, 'test', 'templates', 'copy.jpeg')
   @col1 << {
     :name => Faker::Name.name,
-    :id => i,
+    :image => image,
     :city => Faker::Address.city,
     :address => Faker::Address.street_address
   }
@@ -22,7 +23,7 @@ report = ODFReport::Report.new("test/templates/temp_table.docx") do |r|
   r.add_field("HEAD_04", 'City')
 
   r.add_table("TABLE_01", @col1, :header=>true) do |t|
-    t.add_column(:field_01, :id)
+    t.add_image(:table_image, :image)
     t.add_column(:field_02, :name)
     t.add_column(:field_03, :address)
     t.add_column(:field_04, :city)

@@ -17,6 +17,7 @@ module ODFReport
     end
 
     def update_files(*content_files, &block)
+      excluded_paths = [ImageManager::IMAGE_DIR_NAME, RelationshipManager::RELATIONSHIP_FILE]
 
       Zip::File.open(@template) do |file|
 
@@ -31,7 +32,8 @@ module ODFReport
               yield data, entry.name
             end
 
-            unless entry.name.include? Images::IMAGE_DIR_NAME # do not write images, these will be written later
+            # Check if this is an excluded path - excluded paths (e.g. the Relationship file) are written separately
+            unless excluded_paths.select { |path| entry.name.include? path }.count >= 1
               @output_stream.put_next_entry(entry.name)
               @output_stream.write data
             end
@@ -43,6 +45,23 @@ module ODFReport
       end
 
     end
+    
+    # Updates a specific file in the zip
+    def update_file(filename, &block)
+      Zip::File.open(@template) do |file|
+        data = file.get_entry(filename).get_input_stream.sysread
+        debugger
+        doc = Nokogiri::XML(data)
+        yield doc
+        data.replace(doc.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML))
+        
+        file.remove(filename)
+        os = file.get_output_stream(filename)
+        os.write(data)
+        os.close
+      end
+    end
+    
 
     # Returns access to a file stream
     def read_files(&block)
@@ -52,6 +71,16 @@ module ODFReport
         end
       end
     end # update file stream
+    
+    # Reads a specific file - returns the stream
+    def read_file(filename)
+      file_data = nil
+      Zip::File.open(@template) do |file|
+        file_data = file.get_entry(filename).get_input_stream.sysread
+      end
+      
+      file_data
+    end
 
     def delete_files(*paths, zipfile_path)
       Zip::File.open(zipfile_path, Zip::File::CREATE) do |file|

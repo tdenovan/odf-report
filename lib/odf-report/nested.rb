@@ -6,7 +6,6 @@ module ODFReport
       opts = {:name => name, :data_field => data_field}
       field = Field.new(opts, &block)
       @fields << field
-
     end
     alias_method :add_column, :add_field
 
@@ -14,7 +13,10 @@ module ODFReport
       opts = {:name => name, :data_field => data_field}
       field = Text.new(opts, &block)
       @texts << field
-
+    end
+    
+    def add_image(name, data_field)
+      @images << Image.new(name, nil, data_field)
     end
 
     def add_table(table_name, collection_field, opts={})
