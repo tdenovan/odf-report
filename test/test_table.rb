@@ -6,7 +6,7 @@ require 'launchy'
 @col1 = []
 
 3.times do |i|
-  image = i < 2 ? File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg') : File.join(Dir.pwd, 'test', 'templates', 'copy.jpeg')
+  image = i < 2 ? File.join(Dir.pwd, 'test', 'templates', 'image_01.jpg') : File.join(Dir.pwd, 'test', 'templates', 'image_02.jpg')
   @col1 << {
     :name => Faker::Name.name,
     :image => image,

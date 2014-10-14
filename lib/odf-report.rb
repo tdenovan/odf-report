@@ -4,6 +4,7 @@ require 'fileutils'
 require 'nokogiri'
 
 require File.expand_path('../odf-report/parser/default',  __FILE__)
+require File.expand_path('../odf-report/parser/markup_parser',  __FILE__)
 
 require File.expand_path('../odf-report/image',                 __FILE__)
 require File.expand_path('../odf-report/field',                 __FILE__)

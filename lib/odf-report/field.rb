@@ -25,7 +25,6 @@ module ODFReport
     def replace!(content, data_item = nil)
 
       txt = content.inner_html
-
       val = get_value(data_item)
 
       txt.gsub!(to_placeholder, sanitize(val))
@@ -68,23 +67,16 @@ module ODFReport
 
     def sanitize(txt)
       txt = html_escape(txt)
-      txt = odf_linebreak(txt)
+      txt = ODFReport::Parser::MarkupParser::parse_formatting(txt)
       txt
     end
 
-    HTML_ESCAPE = { '&' => '&amp;',  '>' => '&gt;',   '<' => '&lt;', '"' => '&quot;' }
+    HTML_ESCAPE = { '&' => '&amp;', '"' => '&quot;' }
 
     def html_escape(s)
       return "" unless s
-      s.to_s.gsub(/[&"><]/) { |special| HTML_ESCAPE[special] }
+      s.to_s.gsub(/[&"]/) { |special| HTML_ESCAPE[special] }
     end
-
-    def odf_linebreak(s)
-      return "" unless s
-      s.to_s.gsub("\n", "<text:line-break/>")
-    end
-
-
 
   end
 end

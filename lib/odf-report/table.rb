@@ -15,7 +15,7 @@ class Table
     @images = []
 
     @template_rows = []
-    @header           = opts[:header] || true
+    @header           = opts[:header].nil? ? true : opts[:header]
     @skip_if_empty    = opts[:skip_if_empty] || false
   end
 
