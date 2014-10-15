@@ -36,6 +36,10 @@ task :test_all do
   require './test/test_all.rb'
 end
 
+task :test_sfs do
+  require './test/test_sfs.rb'
+end
+
 task :open do
   Dir.glob('./test/result/*.odt').each { |file| Launchy.open(file) }
 end

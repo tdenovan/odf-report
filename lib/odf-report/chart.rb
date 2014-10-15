@@ -43,14 +43,74 @@ class Chart
 
         elsif doc.xpath("//c:grouping").attr('val').value.nil? == false # For Waterfall charts
 
-          output = rearrange_waterfall
+          # - remove all c:ser elements (and children) on the c:barchart element
+          length = @collection.length
+          doc.xpath("//c:ser").remove
+          column_idx = 0
+
+
+          series_names = ['Fill', 'Base', 'Rise', 'Rise', 'Fall', 'Fall']
+          color_fill_xml = ["<a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/>",
+            "<a:solidFill><a:schemeClr val=\"accent1\"/></a:solidFill>",
+            "<a:solidFill><a:schemeClr val=\"accent6\"/></a:solidFill>",
+            "<a:solidFill><a:schemeClr val=\"accent6\"/></a:solidFill>",
+            "<a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill>",
+            "<a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill>"]
+
+          series_names.each_with_index do |name, index|
+            series_temp = "<c:ser><c:idx val=\"#{index}\"/><c:order val=\"#{index}\"/><c:tx><c:strRef><c:f>Sheet1!$B$1</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>#{name}</c:v></c:pt></c:strCache></c:strRef></c:tx><c:spPr>#{color_fill_xml[index]}</c:spPr><c:invertIfNegative val=\"0\"/><c:cat><c:strRef><c:f>Sheet1!$A$2:$A$3</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>Column Name</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$2:$B$3</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>1.0</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>"
+            doc.xpath("//c:barChart").first.add_child(series_temp)
+          end
+
+          doc.xpath("//c:ser").each do |series|
+            column_idx = 0
+
+            until series.xpath(".//c:cat").xpath(".//c:pt").length == length
+              column_idx += 1
+
+              column_temp = "<c:pt idx=\"#{column_idx}\"><c:v>New Column</c:v></c:pt>"
+              value_temp = "<c:pt idx=\"#{column_idx}\"><c:v>0.0</c:v></c:pt>"
+
+              series.xpath(".//c:strCache").last.add_child(column_temp)
+              series.xpath(".//c:numCache").last.add_child(value_temp)
+            end
+          end
+
+          # column_temp = Nokogiri::XML::Node.new "c:pt" series_temp
+
+
+
+          # - load a blank (template) c:ser element from a saved XML file - e.g. waterfall_chart_series.xml - using nokogiri
+          # - duplicate the blank series 6 times - once for fill, base, rise, etc.
+          # - loop through each series and add the appropriate c:val elemenets and c:cat elements (one for each column)
+          # - add the created 6 series to the c:barchart element
+
+
+
+
+          # Find the number of columns in the series
+          # length = @collection.length
+          # doc.xpath("//c:ser").each do |series|
+          #   series.xpath(".//c:ptCount")[1].content = length
+          #   series.xpath(".//c:ptCount")[2].content = length
+          #   until series.xpath(".//c:cat").xpath(".//c:pt").length == length
+          #     series.xpath(".//c:cat").xpath(".//c:pt").last.remove
+          #     series.xpath(".//c:val").xpath(".//c:pt").last.remove
+          #   end
+          # end
+          # Go through each series(6)
+          # Change all <c:ptCount val="21"/>
+          # Delete the last 'x' amt of <c:pt idx="4">
+
+
+          output = etl_waterfall
 
           doc.xpath("//c:cat").xpath(".//c:v").each_with_index do |node, index|
 
             until index < @collection.length
               index -= @collection.length
             end
-            @collection['Finish'] = nil
+            # @collection['Finish'] = nil
             node.content = @collection.keys[index]
           end
 
@@ -95,7 +155,7 @@ class Chart
 
   private
 
-  def rearrange_waterfall
+  def etl_waterfall
     input = @collection.values
     output = {
       'fill' => [],
@@ -105,7 +165,7 @@ class Chart
       'con+' => [],
       'con-' => []
     }
-    input << 0
+    # input << 0
     sum = 0
 
     input.each_with_index do |num, index|
