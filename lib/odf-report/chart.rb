@@ -10,8 +10,9 @@ class Chart
     @name             = opts[:name]
     @collection       = opts[:collection]
 
-    @series_name      = opts[:series_name] || ''
-    @chart_type       = opts[:chart_type] || ''
+    @series           = opts[:series] || nil
+    @chart_type       = opts[:chart_type] || nil
+    @title            = opts[:title] || nil
 
   end
 
@@ -46,6 +47,7 @@ class Chart
           doc.xpath("//c:val//c:v").each_with_index do |node, index|
             node.content = @collection.values[index]
           end
+
 
         elsif doc.xpath("//c:grouping").attr('val').value == 'stacked' # For Waterfall charts
 
@@ -149,6 +151,17 @@ class Chart
         column_idx += 1
       end
     end
+
+    doc.xpath("//c:ser//c:v").first.content = @series if @series.class == String
+    doc.xpath("//c:tx//c:v").each_with_index { |name, index| name.content = @series[index] } if @series.class == Array
+
+    doc.xpath("//c:title").remove
+    if !!@title
+      title_temp = '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr/></a:pPr><a:r><a:rPr lang="en-US"/><a:t>New Title</a:t></a:r></a:p></c:rich></c:tx><c:layout/><c:overlay val="0"/></c:title>'
+      doc.xpath("//c:chart").first.add_child(title_temp)
+      doc.xpath("//a:t").first.content = @title
+    end
+
   end
 
   def etl_waterfall
