@@ -75,13 +75,13 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
   r.add_field("HEAD_01", 'ID1')
   r.add_field("HEAD_02", 'Name1')
   r.add_field("HEAD_03", 'Address1')
-  r.add_field("HEAD_04", 'City1')
+  # r.add_field("HEAD_04", 'City1')
 
   r.add_table("TABLE_01", @col1) do |t|
     t.add_column(:field_01, :id)
     t.add_column(:field_02, :name)
     t.add_column(:field_03, :address)
-    t.add_column(:field_04, :city)
+    # t.add_column(:field_04, :city)
   end
 
   r.add_field("HEAD_11", 'ID2')

@@ -11,7 +11,6 @@ class Chart
     @collection       = opts[:collection]
 
     @series           = opts[:series] || nil
-    @chart_type       = opts[:chart_type] || nil
     @title            = opts[:title] || nil
 
   end

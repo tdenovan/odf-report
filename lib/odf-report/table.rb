@@ -38,13 +38,13 @@ class Table
       end
 
       @collection.each do |data_item|
-        
+
         new_node = get_next_row
         @tables.each    { |t| t.replace!(new_node, data_item) }
         @images.each    { |i| @image_manager.register_new_image(i.dup, new_node, data_item) }
         @texts.each     { |t| t.replace!(new_node, data_item) }
         @fields.each    { |f| f.replace!(new_node, data_item) }
-        
+
         table.add_child(new_node)
 
       end

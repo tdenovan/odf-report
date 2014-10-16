@@ -1,1 +1,0 @@
-p Time.now.to_s[0..9]
