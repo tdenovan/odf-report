@@ -45,23 +45,22 @@ module ODFReport
       end
 
     end
-    
+
     # Updates a specific file in the zip
     def update_file(filename, &block)
       Zip::File.open(@template) do |file|
         data = file.get_entry(filename).get_input_stream.sysread
-        debugger
         doc = Nokogiri::XML(data)
         yield doc
         data.replace(doc.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML))
-        
+
         file.remove(filename)
         os = file.get_output_stream(filename)
         os.write(data)
         os.close
       end
     end
-    
+
 
     # Returns access to a file stream
     def read_files(&block)
@@ -71,20 +70,19 @@ module ODFReport
         end
       end
     end # update file stream
-    
+
     # Reads a specific file - returns the stream
     def read_file(filename)
       file_data = nil
       Zip::File.open(@template) do |file|
         file_data = file.get_entry(filename).get_input_stream.sysread
       end
-      
+
       file_data
     end
 
     def delete_files(*paths, zipfile_path)
       Zip::File.open(zipfile_path, Zip::File::CREATE) do |file|
-        debugger
         paths.each { |path| file.remove(path) }
       end
     end

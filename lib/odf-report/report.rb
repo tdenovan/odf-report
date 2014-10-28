@@ -1,7 +1,7 @@
 module ODFReport
 
 class Report
-  
+
   def initialize(template_name, &block)
 
     @file = ODFReport::File.new(template_name)
@@ -14,9 +14,10 @@ class Report
     @remove_sections = []
     @remove_slides = []
     @charts = []
-    
+    @spreadsheets = []
+
     # Manager singleton classes
-    @relationship_manager = ODFReport::RelationshipManager.new(@file)
+    # @relationship_manager = ODFReport::RelationshipManager.new(@file)
     @image_manager = ODFReport::ImageManager.new(@relationship_manager, @file)
 
     yield(self)
@@ -51,6 +52,9 @@ class Report
     opts.merge!(:name => chart_name, :collection => collection)
     chart = Chart.new(opts)
     @charts << chart
+    # opts.merge!(:name => chart_name, :collection => collection)
+    spreadsheet = Spreadsheet.new(opts)
+    @spreadsheets << spreadsheet
   end
 
   def add_section(section_name, collection, opts={})
@@ -98,19 +102,21 @@ class Report
 
     @file.update_content do |file|
 
-      file.update_files('word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE) do |txt, filename|
+      # file.update_files('word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE) do |txt, filename|
+      file.update_files('xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml') do |txt, filename|
 
         parse_document(txt) do |doc|
-          @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
-          
+          # @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
+
           @image_manager.find_image_ids(doc)
 
-          @slides.each   { |s| s.replace!(doc) }
-          @sections.each { |s| s.replace!(doc) }
-          @tables.each   { |t| t.replace!(doc) }
-          @texts.each    { |t| t.replace!(doc) }
-          @fields.each   { |f| f.replace!(doc) }
-          @charts.each   { |c| c.replace!(doc, filename) }
+          @slides.each         { |s| s.replace!(doc) }
+          @sections.each       { |s| s.replace!(doc) }
+          @tables.each         { |t| t.replace!(doc) }
+          @texts.each          { |t| t.replace!(doc) }
+          @fields.each         { |f| f.replace!(doc) }
+          @charts.each         { |c| c.replace!(doc, filename) }
+          @spreadsheets.each   { |c| c.replace!(doc, filename) }
 
           # CHANGED by tdenovan. We need a special call to remove template slides, as it can't be done in the replace method as other slides might rely on the template slide
           @slides.each  { |s| s.remove!(doc) }
@@ -119,7 +125,7 @@ class Report
 
       end
 
-      @relationship_manager.write_new_relationships
+      # @relationship_manager.write_new_relationships
       @image_manager.write_images
     end
 
