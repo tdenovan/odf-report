@@ -208,6 +208,7 @@ class Chart
     end
 
     output
+
   end
 
 end

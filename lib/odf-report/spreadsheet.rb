@@ -155,7 +155,6 @@ class Spreadsheet
 
   end
 
-
-  end
+end
 
 end
