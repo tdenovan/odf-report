@@ -23,8 +23,8 @@ module ODFReport
 
         file.each do |entry|
 
-          # next if entry.directory?
-
+          next if entry.directory?
+          
           entry.get_input_stream do |is|
             data = is.sysread
 
