@@ -18,13 +18,24 @@ class Spreadsheet
 
   def replace!(doc, filename, row = nil)
 
+    if @series.class == String # For Pie Charts
+
+      @series = [@series]
+      @collection.each { |k, v| @collection[k] = [v] }
+
+    elsif @series.nil? # For Waterfall Charts
+
+      @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
+      etl_waterfall
+
+    end
+
+    rows = @collection.length + 1
+    cols = @series.length + 1
+
     if /worksheets/ === filename
 
       doc.xpath("//xmlns:row").remove
-
-      rows = @collection.length + 1
-      cols = @series.length + 1
-
       doc.xpath("//xmlns:dimension").first['ref'] = "A1:#{(cols + 64).chr}#{rows}"
 
       rows.times do |row|
@@ -57,9 +68,6 @@ class Spreadsheet
       end
 
     elsif /tables/ === filename
-
-      rows = @collection.length + 1
-      cols = @series.length + 1
 
       doc.xpath("//xmlns:table").first['ref'] = "A1:#{(cols + 64).chr}#{rows}"
       doc.xpath("//xmlns:tableColumns").first['count'] = @series.length + 1
@@ -94,10 +102,59 @@ class Spreadsheet
 
     end
 
-    # debugger
-    # 'hek'
 
   end
+
+  private
+
+  def etl_waterfall
+    input = @collection.values
+    output = {
+      'fill' => [],
+      'base' => [],
+      'pro+' => [],
+      'pro-' => [],
+      'con+' => [],
+      'con-' => []
+    }
+
+    sum = 0
+
+    input.each_with_index do |num, index|
+
+      if index == 0
+        output['base'] << num
+      elsif index == input.length - 1
+        output['base'] << sum
+      elsif num >= 0 and sum >= 0
+        output['fill'] << sum
+        output['pro+'] << num
+      elsif num >= 0 and sum < 0 and sum + num < 0
+        output['fill'] << sum + num
+        output['pro-'] << - num
+      elsif num >= 0 and sum < 0 and sum + num >= 0
+        output['pro+'] << sum + num
+        output['pro-'] << sum
+      elsif num < 0 and sum < 0
+        output['fill'] << sum
+        output['con-'] << num
+      elsif num < 0 and sum >= 0 and sum + num >= 0
+        output['fill'] << sum + num
+        output['con+'] << - num
+      elsif num < 0 and sum >= 0 and sum + num < 0
+        output['con+'] << sum
+        output['con-'] << sum + num
+      end
+
+      length = output.values.sort_by { |x| x.length }.last.length
+      output.values.each { |arr| arr << 0 if arr.length < length }
+      sum += num
+    end
+
+    output.values.transpose.each_with_index { |array, index| @collection[@collection.keys[index]] = array }
+
+  end
+
 
   end
 

@@ -2,9 +2,20 @@ module ODFReport
 
 class Report
 
+  FILES_TO_UPDATE = {
+    doc: ['word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE],
+    excel: ['xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml']
+  }
+
   def initialize(template_name, &block)
 
     @file = ODFReport::File.new(template_name)
+    @file_type = :doc
+
+    case ::File::extname(template_name)
+    when '.xlsx'
+      @file_type = :excel
+    end
 
     @texts = []
     @fields = []
@@ -17,7 +28,7 @@ class Report
     @spreadsheets = []
 
     # Manager singleton classes
-    # @relationship_manager = ODFReport::RelationshipManager.new(@file)
+    @relationship_manager = ODFReport::RelationshipManager.new(@file)
     @image_manager = ODFReport::ImageManager.new(@relationship_manager, @file)
 
     yield(self)
@@ -102,11 +113,12 @@ class Report
 
     @file.update_content do |file|
 
+      # file.update_files(FILES_TO_UPDATE[@file_type]) do |txt, filename|
       # file.update_files('word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE) do |txt, filename|
       file.update_files('xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml') do |txt, filename|
 
         parse_document(txt) do |doc|
-          # @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
+          @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
           @image_manager.find_image_ids(doc)
 
           @slides.each         { |s| s.replace!(doc) }
@@ -115,7 +127,7 @@ class Report
           @texts.each          { |t| t.replace!(doc) }
           @fields.each         { |f| f.replace!(doc) }
           @charts.each         { |c| c.replace!(doc, filename) }
-          @spreadsheets.each   { |c| c.replace!(doc, filename) }
+          @spreadsheets.each   { |c| c.replace!(doc, filename) } if @file_type == :excel
 
           # CHANGED by tdenovan. We need a special call to remove template slides, as it can't be done in the replace method as other slides might rely on the template slide
           @slides.each  { |s| s.remove!(doc) }
@@ -124,7 +136,7 @@ class Report
 
       end
 
-      # @relationship_manager.write_new_relationships
+      @relationship_manager.write_new_relationships if @file_type == :doc
       @image_manager.write_images
     end
 
