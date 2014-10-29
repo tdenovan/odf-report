@@ -25,6 +25,8 @@ class Spreadsheet
       rows = @collection.length + 1
       cols = @series.length + 1
 
+      doc.xpath("//xmlns:dimension").first['ref'] = "A1:#{(cols + 64).chr}#{rows}"
+
       rows.times do |row|
         node = "<row r=\"#{row + 1}\" spans=\"1:4\">"
         doc.xpath("//xmlns:sheetData").first.add_child(node)
@@ -55,6 +57,12 @@ class Spreadsheet
       end
 
     elsif /tables/ === filename
+
+      rows = @collection.length + 1
+      cols = @series.length + 1
+
+      doc.xpath("//xmlns:table").first['ref'] = "A1:#{(cols + 64).chr}#{rows}"
+      doc.xpath("//xmlns:tableColumns").first['count'] = @series.length + 1
 
       node = doc.xpath("//xmlns:tableColumn").first
       doc.xpath("//xmlns:tableColumn").remove
