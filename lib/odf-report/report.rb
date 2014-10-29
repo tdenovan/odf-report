@@ -107,7 +107,6 @@ class Report
 
         parse_document(txt) do |doc|
           # @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
-
           @image_manager.find_image_ids(doc)
 
           @slides.each         { |s| s.replace!(doc) }
