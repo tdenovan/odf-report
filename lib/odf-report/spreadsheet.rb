@@ -16,7 +16,7 @@ class Spreadsheet
 
   end
 
-  def replace!(doc, filename, row = nil)
+  def replace!(doc, filename, template_name, relationships, row = nil)
 
     if @series.class == String # For Pie Charts
 

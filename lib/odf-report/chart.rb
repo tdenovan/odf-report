@@ -17,105 +17,74 @@ class Chart
 
   def replace!(doc, filename, row = nil)
 
-    if doc.namespaces.include? 'xmlns' and doc.xpath("//xmlns:Relationship").any? # Look into _rels/document.xml.rels
+    if /_rels\/document/ === filename # Look into _rels/document.xml.rels
 
       doc.xpath("//xmlns:Relationship").each do |rel|
         @@id_target[rel.attr('Id')] = rel.attr('Target')
       end
 
-    elsif doc.namespaces.include? 'xmlns:w' and doc.xpath("//w:drawing").any? # Look into word/document.xml
+    elsif /_rels\/chart/ === filename # Look into _rels/chart.xml.rels
+
+      chart_name = @name
+      chart_id = @@name_id[chart_name]
+      chart_target = @@id_target[chart_id].split("\/").last
+
+      if /#{Regexp.quote(chart_target)}/ === filename
+
+        excel_file = doc.xpath("//xmlns:Relationship").first['Target']
+
+        ##########
+
+        # Make a function here to go into the excel file and edit the xml files in there
+
+        ##########
+
+      end
+
+    elsif /word\/document/ === filename # Look into word/document.xml
 
       @@name_id[@name] = doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"}).attr('id').value
 
-    elsif doc.namespaces.include? 'xmlns:c' # Look through chart.xml
+    elsif /charts\/chart/ === filename # Look through chart.xml
 
       if filename.include? @@id_target[@@name_id[@name]]
 
         if doc.namespaces.include? 'xmlns:c' and doc.xpath("//c:pieChart").any? or doc.xpath("//c:doughnutChart").any? # For Pie/Doughnut Charts
 
-          no_series = 1
+          @series = [@title] unless @series.is_a? Array
+          @collection.each { |k, v| @collection[k] = [v] } unless @collection.values.first.is_a? Array
+
           type = 'pie' if doc.xpath("//c:pieChart").any?
           type = 'doughnut' if doc.xpath("//c:doughnutChart").any?
 
-          add_series(doc, no_series, type)
+          add_series(doc, type)
 
-          doc.xpath("//c:cat//c:v").each_with_index do |node, index|
-            node.content = @collection.keys[index]
-          end
-
-          doc.xpath("//c:val//c:v").each_with_index do |node, index|
-            node.content = @collection.values[index]
-          end
-
+          add_data(doc)
 
         elsif doc.xpath("//c:grouping").attr('val').value == 'stacked' # For Waterfall charts
 
-          series_name = ['Fill', 'Base', 'Rise', 'Rise', 'Fall', 'Fall']
-          color_fill = [
-            "<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/></c:spPr>",
-            "<c:spPr><a:solidFill><a:schemeClr val=\"accent1\"/></a:solidFill></c:spPr>",
-            "<c:spPr><a:solidFill><a:schemeClr val=\"accent6\"/></a:solidFill></c:spPr>",
-            "<c:spPr><a:solidFill><a:schemeClr val=\"accent6\"/></a:solidFill></c:spPr>",
-            "<c:spPr><a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill></c:spPr>",
-            "<c:spPr><a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill></c:spPr>"
-          ]
+          etl_waterfall
 
-          output = etl_waterfall
-
-          no_series = 6
-
-          add_series(doc, no_series)
+          add_series(doc)
 
           doc.xpath("//c:ser").each_with_index do |series, index|
-            series.xpath(".//c:v").first.content = series_name[index]
-            series.add_child(color_fill[index])
+            series.xpath(".//c:v").first.content = @series[index]
+            series.add_child(@color_fill[index])
           end
 
-          doc.xpath("//c:cat//c:v").each_with_index do |node, index|
-
-            until index < @collection.length
-              index -= @collection.length
-            end
-
-            node.content = @collection.keys[index]
-          end
-
-          doc.xpath("//c:val//c:v").each_with_index do |node, index|
-            series = 0
-
-            until index < output.values.first.length
-              index -= output.values.first.length
-              series += 1
-            end
-
-            node.content = output.values[series][index]
-          end
+          add_data(doc)
 
         elsif doc.namespaces.include? 'xmlns:c' and doc.xpath("//c:barChart").any? # For Bar/Column Charts
 
-          no_series = @collection.values.first.length
-
-          add_series(doc, no_series)
-
-          doc.xpath("//c:cat//c:v").each_with_index do |node, index|
-
-            until index < @collection.length
-              index -= @collection.length
-            end
-
-            node.content = @collection.keys[index]
+          if @series.length < @collection.values.first.length
+            @series << rand(65..91).chr until @series.length == @collection.values.first.length
+          elsif @series.length < @collection.values.first.length
+            @series.pop until @series.length == @collection.values.first.length
           end
 
-          doc.xpath("//c:val//c:v").each_with_index do |node, index|
-            series = 0
+          add_series(doc)
 
-            until index < @collection.length
-              index -= @collection.length
-              series += 1
-            end
-
-            node.content = @collection.values[index][series]
-          end
+          add_data(doc)
 
         end
 
@@ -127,11 +96,14 @@ class Chart
 
   private
 
-  def add_series(doc, no_series, type = 'bar')
+  def add_series(doc, type = 'bar')
+
+    rows = @collection.length
+
     doc.xpath("//c:ser").remove
 
-    no_series.times do |i|
-      series_temp = "<c:ser><c:idx val=\"#{i}\"/><c:order val=\"#{i}\"/><c:tx><c:strRef><c:f>Sheet1!$B$1</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>New Series</c:v></c:pt></c:strCache></c:strRef></c:tx><c:invertIfNegative val=\"0\"/><c:cat><c:strRef><c:f>Sheet1!$A$2:$A$3</c:f><c:strCache><c:ptCount val=\"1\"/></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$2:$B$3</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val=\"1\"/></c:numCache></c:numRef></c:val></c:ser>"
+    @series.length.times do |i|
+      series_temp = "<c:ser><c:idx val=\"#{i}\"/><c:order val=\"#{i}\"/><c:tx><c:strRef><c:f>Sheet1!$#{(66 + i).chr}$1</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>New Series</c:v></c:pt></c:strCache></c:strRef></c:tx><c:invertIfNegative val=\"0\"/><c:cat><c:strRef><c:f>Sheet1!$A$2:$A$#{rows + 1}</c:f><c:strCache><c:ptCount val=\"1\"/></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$#{(66 + i).chr}$2:$#{(66 + i).chr}$#{rows + 1}</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val=\"1\"/></c:numCache></c:numRef></c:val></c:ser>"
       doc.xpath("//c:#{type}Chart").first.add_child(series_temp)
     end
 
@@ -163,6 +135,32 @@ class Chart
 
   end
 
+  def add_data(doc)
+
+    doc.xpath("//c:cat//c:v").each_with_index do |node, index|
+
+      until index < @collection.length
+        index -= @collection.length
+      end
+
+      node.content = @collection.keys[index]
+
+    end
+
+    doc.xpath("//c:val//c:v").each_with_index do |node, index|
+      series = 0
+
+      until index < @collection.length
+        index -= @collection.length
+        series += 1
+      end
+
+      node.content = @collection.values[index][series]
+
+    end
+
+  end
+
   def etl_waterfall
     input = @collection.values
     output = {
@@ -173,6 +171,17 @@ class Chart
       'con+' => [],
       'con-' => []
     }
+
+    @series = ['Fill', 'Base', 'Rise', 'Rise', 'Fall', 'Fall']
+
+    @color_fill = [
+      "<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/></c:spPr>",
+      "<c:spPr><a:solidFill><a:schemeClr val=\"accent1\"/></a:solidFill></c:spPr>",
+      "<c:spPr><a:solidFill><a:schemeClr val=\"accent6\"/></a:solidFill></c:spPr>",
+      "<c:spPr><a:solidFill><a:schemeClr val=\"accent6\"/></a:solidFill></c:spPr>",
+      "<c:spPr><a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill></c:spPr>",
+      "<c:spPr><a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill></c:spPr>"
+    ]
 
     sum = 0
 
@@ -207,8 +216,7 @@ class Chart
       sum += num
     end
 
-    output
-
+    output.values.transpose.each_with_index { |array, index| @collection[@collection.keys[index]] = array }
   end
 
 end
