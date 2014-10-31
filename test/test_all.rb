@@ -64,15 +64,15 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
   r.add_field("TEXT_02", Faker::Company.catch_phrase)
 
   # Chart
-  r.add_chart("CHART_01", alphabet, :series => 'Pi', :title => 'Pie Chart')
+  r.add_chart("CHART_01", alphabet, :series => 'Pi', :title => 'Pie Chart', :type => 'pie')
 
-  r.add_chart("CHART_02", things, :series => 'Phi')
+  r.add_chart("CHART_02", things, :series => 'Phi', :type => 'doughnut')
 
-  r.add_chart("CHART_03", bar, :series => ['Abc', 'Def', 'Ghi'])
+  r.add_chart("CHART_03", bar, :series => ['Abc', 'Def', 'Ghi'], :type => 'bar')
 
-  r.add_chart("CHART_04", column, :series => ['Jkl'], :title => 'Colony')
+  r.add_chart("CHART_04", column, :series => ['Jkl'], :title => 'Colony', :type => 'column')
 
-  r.add_chart('chart_05', more_things, :title => 'Things')
+  # r.add_chart('chart_05', more_things, :title => 'Things', :type => 'waterfall')
 
   # Image
   # r.add_image('IMAGE_01', File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg'))

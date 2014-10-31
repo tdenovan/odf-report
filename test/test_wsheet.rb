@@ -14,7 +14,7 @@ alphabet = {
 
 report = ODFReport::Report.new("test/templates/temp_wsheet.xlsx") do |r|
 
-  r.add_chart("TITLE", alphabet)
+  r.add_spreadsheet("TITLE", alphabet)
 
 end
 

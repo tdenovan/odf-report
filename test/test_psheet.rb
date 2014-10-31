@@ -9,7 +9,7 @@ end
 
 report = ODFReport::Report.new("test/templates/temp_psheet.xlsx") do |r|
 
-  r.add_chart("CHART_01", hash, :series => 'Hello', :title => 'Goodbye')
+  r.add_spreadsheet("CHART_01", hash, :series => 'Hello', :title => 'Goodbye')
 
 end
 

@@ -22,7 +22,7 @@ end
 
 report = ODFReport::Report.new("test/templates/temp_csheet.xlsx") do |r|
 
-  r.add_chart("TITLE", data, :series => series, :title => title)
+  r.add_spreadsheet("TITLE", data, :series => series, :title => title)
 
 end
 

@@ -30,6 +30,7 @@ class Report
     # Manager singleton classes
     @relationship_manager = ODFReport::RelationshipManager.new(@file)
     @image_manager = ODFReport::ImageManager.new(@relationship_manager, @file)
+    @chart_manager = ODFReport::ChartManager.new(@relationship_manager, @file)
 
     yield(self)
 
@@ -42,8 +43,6 @@ class Report
   end
 
   alias_method :add_header, :add_field
-  alias_method :add_title, :add_field
-  alias_method :add_series, :add_field
 
   def add_text(field_tag, value='')
     opts = {:name => field_tag, :value => value}
@@ -60,10 +59,14 @@ class Report
   end
 
   def add_chart(chart_name, collection, opts={})
-    opts.merge!(:name => chart_name, :collection => collection)
+    opts.merge!(:name => chart_name, :collection => collection, file: @file)
     chart = Chart.new(opts)
     @charts << chart
-    # opts.merge!(:name => chart_name, :collection => collection)
+    @chart_manager.add_charts(chart_name, collection, opts={})
+  end
+
+  def add_spreadsheet(spreadsheet_name, collection, opts={})
+    opts.merge!(:name => spreadsheet_name, :collection => collection)
     spreadsheet = Spreadsheet.new(opts)
     @spreadsheets << spreadsheet
   end
@@ -113,13 +116,13 @@ class Report
 
     @file.update_content do |file|
 
-      # file.update_files(FILES_TO_UPDATE[@file_type]) do |txt, filename|
-      file.update_files('word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE) do |txt, filename|
-      # file.update_files('xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml') do |txt, filename|
+      file.update_files(*FILES_TO_UPDATE[@file_type]) do |txt, filename|
+      #file.update_files('word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE, 'xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml') do |txt, filename|
 
         parse_document(txt) do |doc|
           @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
           @image_manager.find_image_ids(doc)
+          @chart_manager.find_chart_ids(doc, filename) # Scan each chart
 
           @slides.each         { |s| s.replace!(doc) }
           @sections.each       { |s| s.replace!(doc) }
@@ -127,7 +130,7 @@ class Report
           @texts.each          { |t| t.replace!(doc) }
           @fields.each         { |f| f.replace!(doc) }
           @charts.each         { |c| c.replace!(doc, filename) }
-          @spreadsheets.each   { |c| c.replace!(doc, filename) } if @file_type == :excel
+          @spreadsheets.each   { |c| c.replace!(doc, filename) } if @file_type == :excel # Extract chart from docx zip and store it locally
 
           # CHANGED by tdenovan. We need a special call to remove template slides, as it can't be done in the replace method as other slides might rely on the template slide
           @slides.each  { |s| s.remove!(doc) }
@@ -138,6 +141,10 @@ class Report
 
       @relationship_manager.write_new_relationships if @file_type == :doc
       @image_manager.write_images
+      @chart_manager.write_charts # Modify xlsx and save altered, delete old file
+
+      # Notify chart something of the altered file...
+
     end
 
     # Write the docx file

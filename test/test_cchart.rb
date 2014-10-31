@@ -20,7 +20,7 @@ end
 
 report = ODFReport::Report.new("test/templates/temp_columnchart.docx") do |r|
 
-  r.add_chart("TITLE", data, :series => series, :title => title)
+  r.add_chart("TITLE", data, :series => series, :title => title, :type => 'column')
 
 end
 

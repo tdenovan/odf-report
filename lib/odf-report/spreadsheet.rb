@@ -8,15 +8,17 @@ class Spreadsheet
   @sheet_id = {}
 
   def initialize(opts)
+
     @name             = opts[:name]
     @collection       = opts[:collection]
 
     @series           = opts[:series] || nil
     @title            = opts[:title] || nil
+    @type            = opts[:type] || nil
 
   end
 
-  def replace!(doc, filename, template_name, relationships, row = nil)
+  def replace!(doc, filename, row = nil)
 
     if @series.class == String # For Pie Charts
 
@@ -88,7 +90,10 @@ class Spreadsheet
 
     elsif /sharedStrings/ === filename
 
-      doc.xpath("//xmlns:si").last.remove until doc.xpath("//xmlns:si").length == 1
+      doc.xpath("//xmlns:si").remove
+
+      first_node = "<si><t xml:space=\"preserve\"> </t></si>"
+      doc.xpath("//xmlns:sst").last.add_child(first_node)
 
       @series.each do |name|
         node = "<si><t>#{name}</t></si>"

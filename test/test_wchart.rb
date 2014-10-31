@@ -14,7 +14,7 @@ alphabet = {
 
 report = ODFReport::Report.new("test/templates/temp_wchart.docx") do |r|
 
-  r.add_chart("TITLE", alphabet)
+  r.add_chart("TITLE", alphabet, :type => 'waterfall')
 
 end
 

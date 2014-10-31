@@ -3,6 +3,8 @@ module ODFReport
 class Chart
   include Nested
 
+  attr_accessor :name, :collection, :series, :title, :type, :file, :id, :target, :excel
+
   @@id_target = {}
   @@name_id = {}
 
@@ -12,7 +14,12 @@ class Chart
 
     @series           = opts[:series] || nil
     @title            = opts[:title] || nil
+    @type             = opts[:type] || nil
+    @file             = opts[:file] || nil
 
+    @id               = ''
+    @target           = ''
+    @excel            = ''
   end
 
   def replace!(doc, filename, row = nil)
@@ -31,13 +38,21 @@ class Chart
 
       if /#{Regexp.quote(chart_target)}/ === filename
 
-        excel_file = doc.xpath("//xmlns:Relationship").first['Target']
+        target = doc.xpath("//xmlns:Relationship").first['Target']
+        current_path = "word" + target[2..-1]
 
-        ##########
+        excel_file_data = @file.read_file(current_path)
+        tmp_filename = "#{@name}_temp.xlsx"
+        ::File.open(tmp_filename, "wb") {|f| f.write(excel_file_data) } # TODO fix the temporary file to actually reference a temporary file path in the tmp folder
 
-        # Make a function here to go into the excel file and edit the xml files in there
 
-        ##########
+        report = ODFReport::Report.new(tmp_filename) do |r|
+           r.add_spreadsheet(@name, @collection, :series => @series, :title => @title, :type => @type)
+        end
+
+        replacement_path = "#{@name}.xlsx"
+
+        report.generate(replacement_path)
 
       end
 
@@ -49,19 +64,18 @@ class Chart
 
       if filename.include? @@id_target[@@name_id[@name]]
 
-        if doc.namespaces.include? 'xmlns:c' and doc.xpath("//c:pieChart").any? or doc.xpath("//c:doughnutChart").any? # For Pie/Doughnut Charts
+        case @type
+
+        when 'pie', 'doughnut' # For Pie/Doughnut Charts
 
           @series = [@title] unless @series.is_a? Array
           @collection.each { |k, v| @collection[k] = [v] } unless @collection.values.first.is_a? Array
 
-          type = 'pie' if doc.xpath("//c:pieChart").any?
-          type = 'doughnut' if doc.xpath("//c:doughnutChart").any?
-
-          add_series(doc, type)
+          add_series(doc, @type)
 
           add_data(doc)
 
-        elsif doc.xpath("//c:grouping").attr('val').value == 'stacked' # For Waterfall charts
+        when 'waterfall' # For Waterfall charts
 
           etl_waterfall
 
@@ -74,7 +88,7 @@ class Chart
 
           add_data(doc)
 
-        elsif doc.namespaces.include? 'xmlns:c' and doc.xpath("//c:barChart").any? # For Bar/Column Charts
+        when 'bar', 'column' # For Bar/Column Charts
 
           if @series.length < @collection.values.first.length
             @series << rand(65..91).chr until @series.length == @collection.values.first.length
