@@ -117,7 +117,6 @@ class Report
     @file.update_content do |file|
 
       file.update_files(*FILES_TO_UPDATE[@file_type]) do |txt, filename|
-      #file.update_files('word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE, 'xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml') do |txt, filename|
 
         parse_document(txt) do |doc|
           @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE

@@ -42,7 +42,7 @@ class Chart
         current_path = "word" + target[2..-1]
 
         excel_file_data = @file.read_file(current_path)
-        tmp_filename = "#{@name}_temp.xlsx"
+        tmp_filename = "temp_#{current_path.split('/').last}"
         ::File.open(tmp_filename, "wb") {|f| f.write(excel_file_data) } # TODO fix the temporary file to actually reference a temporary file path in the tmp folder
 
 
@@ -50,7 +50,7 @@ class Chart
            r.add_spreadsheet(@name, @collection, :series => @series, :title => @title, :type => @type)
         end
 
-        replacement_path = "#{@name}.xlsx"
+        replacement_path = current_path.split('/').last
 
         report.generate(replacement_path)
 
@@ -64,10 +64,14 @@ class Chart
 
       if filename.include? @@id_target[@@name_id[@name]]
 
+        determine_type(doc)
+
         case @type
 
         when 'pie', 'doughnut' # For Pie/Doughnut Charts
 
+          @title = @series if @title.nil? and @series.is_a? String
+          @title = @series.first if @title.nil? and @series.is_a? Array
           @series = [@title] unless @series.is_a? Array
           @collection.each { |k, v| @collection[k] = [v] } unless @collection.values.first.is_a? Array
 
@@ -77,7 +81,7 @@ class Chart
 
         when 'waterfall' # For Waterfall charts
 
-          etl_waterfall
+          etl_waterfall(doc) unless @series == ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
           add_series(doc)
 
@@ -109,6 +113,16 @@ class Chart
   end
 
   private
+
+  def determine_type(doc)
+
+    return unless @type.nil?
+    @type = 'bar' if doc.xpath("//c:barChart").any?
+    @type = 'pie' if doc.xpath("//c:pieChart").any?
+    @type = 'doughnut' if doc.xpath("//c:doughnutChart").any?
+    @type = 'waterfall' if doc.xpath("//c:grouping").first['val'] == 'clustered'
+
+  end
 
   def add_series(doc, type = 'bar')
 
@@ -175,7 +189,7 @@ class Chart
 
   end
 
-  def etl_waterfall
+  def etl_waterfall(doc)
     input = @collection.values
     output = {
       'fill' => [],
@@ -186,7 +200,7 @@ class Chart
       'con-' => []
     }
 
-    @series = ['Fill', 'Base', 'Rise', 'Rise', 'Fall', 'Fall']
+    @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
     @color_fill = [
       "<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/></c:spPr>",
@@ -197,7 +211,11 @@ class Chart
       "<c:spPr><a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill></c:spPr>"
     ]
 
+    doc.xpath('//c:legend').remove
+
     sum = 0
+
+    return if @collection.values.first.is_a? Array
 
     input.each_with_index do |num, index|
 
@@ -231,6 +249,7 @@ class Chart
     end
 
     output.values.transpose.each_with_index { |array, index| @collection[@collection.keys[index]] = array }
+
   end
 
 end

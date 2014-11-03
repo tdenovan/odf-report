@@ -14,21 +14,34 @@ class Spreadsheet
 
     @series           = opts[:series] || nil
     @title            = opts[:title] || nil
-    @type            = opts[:type] || nil
+    @type             = opts[:type] || nil
 
   end
 
   def replace!(doc, filename, row = nil)
 
-    if @series.class == String # For Pie Charts
+    case @type
 
-      @series = [@series]
-      @collection.each { |k, v| @collection[k] = [v] }
+    when 'pie', 'doughnut' # For Pie Charts
 
-    elsif @series.nil? # For Waterfall Charts
+      @series = [@series] unless @series.is_a? Array
+      @collection.each { |k, v| @collection[k] = [v] } unless @collection.values.first.is_a? Array
 
-      @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
-      etl_waterfall
+    when 'waterfall' # For Waterfall Charts
+
+      etl_waterfall unless @series == ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
+
+    when 'bar', 'column' # For Bar/Column Charts
+      # debugger
+      if @series.length < @collection.values.first.length # If number of series names doesn't match the collection values
+
+        @series << rand(65..91).chr until @series.length == @collection.values.first.length
+
+      elsif @series.length < @collection.values.first.length
+
+        @series.pop until @series.length == @collection.values.first.length
+
+      end
 
     end
 
@@ -107,7 +120,6 @@ class Spreadsheet
 
     end
 
-
   end
 
   private
@@ -122,6 +134,8 @@ class Spreadsheet
       'con+' => [],
       'con-' => []
     }
+
+    @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
     sum = 0
 

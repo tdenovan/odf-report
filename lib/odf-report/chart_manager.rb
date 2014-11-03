@@ -46,13 +46,24 @@ module ODFReport
         next unless entry.name.include? CHART_DIR_NAME
         current_chart = @charts.select { |chart| entry.name == chart.excel }.first
 
-        replacement_path = "#{current_chart.name}.xlsx"
+        if current_chart.nil?
 
-        data = ::File.read(replacement_path)
-        @file.output_stream.put_next_entry(entry.name)
-        @file.output_stream.write data
-        ::File.delete "#{current_chart.name}_temp.xlsx"
-        ::File.delete "#{current_chart.name}.xlsx"
+          data = ''
+          entry.get_input_stream { |is| data = is.sysread }
+          @file.output_stream.put_next_entry(entry.name)
+          @file.output_stream.write data
+
+        elsif
+
+          replacement_path = current_chart.excel.split('/').last
+
+          data = ::File.read(replacement_path)
+          @file.output_stream.put_next_entry(entry.name)
+          @file.output_stream.write data
+          ::File.delete replacement_path
+          ::File.delete "temp_#{replacement_path.split('/').last}"
+
+        end
 
       end
 

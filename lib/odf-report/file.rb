@@ -17,7 +17,7 @@ module ODFReport
     end
 
     def update_files(*content_files, &block)
-      excluded_paths = [ImageManager::IMAGE_DIR_NAME, RelationshipManager::RELATIONSHIP_FILE]
+      excluded_paths = [ImageManager::IMAGE_DIR_NAME, RelationshipManager::RELATIONSHIP_FILE, ChartManager::CHART_DIR_NAME]
 
       Zip::File.open(@template) do |file|
 

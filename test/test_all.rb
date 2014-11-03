@@ -26,7 +26,7 @@ column = {
   'Io' => [21, 22, 23],
   'Jiggly' => [24, 25, 26],
   'Kinky' => [27, 28, 29],
-  'Loop' => [30, 31, 31]
+  'Loop' => [30, 31, 32]
 }
 
 more_things = {
@@ -64,15 +64,15 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
   r.add_field("TEXT_02", Faker::Company.catch_phrase)
 
   # Chart
-  r.add_chart("CHART_01", alphabet, :series => 'Pi', :title => 'Pie Chart', :type => 'pie')
+  r.add_chart("CHART_01", alphabet, :series => 'Pi', :title => 'The Yummy Pie Chart', :type => 'pie')
 
-  r.add_chart("CHART_02", things, :series => 'Phi', :type => 'doughnut')
+  r.add_chart("CHART_02", things, :series => 'Mmm... Doughnut...', :type => 'doughnut')
 
-  r.add_chart("CHART_03", bar, :series => ['Abc', 'Def', 'Ghi'], :type => 'bar')
+  r.add_chart("CHART_03", column, :series => ['Abc', 'Def', 'Ghi'], :type => 'column')
 
-  r.add_chart("CHART_04", column, :series => ['Jkl'], :title => 'Colony', :type => 'column')
+  r.add_chart("CHART_04", bar, :series => ['Jkl'], :title => 'Barhopping Chart', :type => 'bar')
 
-  # r.add_chart('chart_05', more_things, :title => 'Things', :type => 'waterfall')
+  r.add_chart('chart_05', more_things, :title => 'Don\'t Go Chasing Waterfalls', :type => 'waterfall')
 
   # Image
   # r.add_image('IMAGE_01', File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg'))
