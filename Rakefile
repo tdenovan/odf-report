@@ -52,6 +52,10 @@ task :test_wsheet do
   require './test/test_wsheet.rb'
 end
 
+task :test_benchmark do
+  require './test/test_benchmark.rb'
+end
+
 task :open do
   Dir.glob('./test/result/*.odt').each { |file| Launchy.open(file) }
 end

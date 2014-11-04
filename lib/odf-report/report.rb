@@ -10,11 +10,10 @@ class Report
   def initialize(template_name, &block)
 
     @file = ODFReport::File.new(template_name)
-    @file_type = :doc
 
     case ::File::extname(template_name)
-    when '.xlsx'
-      @file_type = :excel
+      when '.docx' then @file_type = :doc
+      when '.xlsx' then @file_type = :excel
     end
 
     @texts = []
@@ -117,7 +116,7 @@ class Report
     @file.update_content do |file|
 
       file.update_files(*FILES_TO_UPDATE[@file_type]) do |txt, filename|
-
+puts filename
         parse_document(txt) do |doc|
           @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
           @image_manager.find_image_ids(doc)

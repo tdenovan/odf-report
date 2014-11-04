@@ -36,6 +36,15 @@ more_things = {
   'Doggy' => 35
 }
 
+colors = [
+  ["#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f],
+  ["#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f],
+  ["#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f],
+  ["#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f, "#{rand(1..6)}.#{rand(1..5)}".to_f],
+  ["#{rand(1..6)}.#{rand(1..5)}".to_f]
+]
+
+
 @col1 = []
 10.times do |i|
   @col1 << {
@@ -64,15 +73,15 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
   r.add_field("TEXT_02", Faker::Company.catch_phrase)
 
   # Chart
-  r.add_chart("CHART_01", alphabet, :series => 'Pi', :title => 'The Yummy Pie Chart', :type => 'pie')
+  r.add_chart("CHART_01", alphabet, :series => 'Pi', :title => 'The Yummy Pie Chart', :type => 'pie', :colors => colors[0])
 
-  r.add_chart("CHART_02", things, :series => 'Mmm... Doughnut...', :type => 'doughnut')
+  r.add_chart("CHART_02", things, :series => 'Mmm... Doughnut...', :type => 'doughnut', :colors => colors[1])
 
-  r.add_chart("CHART_03", column, :series => ['Abc', 'Def', 'Ghi'], :type => 'column')
+  r.add_chart("CHART_03", column, :series => ['Abc', 'Def', 'Ghi'], :type => 'column', :colors => colors[2])
 
-  r.add_chart("CHART_04", bar, :series => ['Jkl'], :title => 'Barhopping Chart', :type => 'bar')
+  r.add_chart("CHART_04", bar, :series => ['Jkl'], :title => 'Barhopping Chart', :type => 'bar', :colors => colors[3])
 
-  r.add_chart('chart_05', more_things, :title => 'Don\'t Go Chasing Waterfalls', :type => 'waterfall')
+  r.add_chart('chart_05', more_things, :title => 'Don\'t Go Chasing Waterfalls', :type => 'waterfall', :colors => colors[4])
 
   # Image
   # r.add_image('IMAGE_01', File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg'))

@@ -16,6 +16,7 @@ class Chart
     @title            = opts[:title] || nil
     @type             = opts[:type] || nil
     @file             = opts[:file] || nil
+    @colors           = opts[:colors] || nil
 
     @id               = ''
     @target           = ''
@@ -70,12 +71,12 @@ class Chart
 
         when 'pie', 'doughnut' # For Pie/Doughnut Charts
 
-          @title = @series if @title.nil? and @series.is_a? String
-          @title = @series.first if @title.nil? and @series.is_a? Array
           @series = [@title] unless @series.is_a? Array
           @collection.each { |k, v| @collection[k] = [v] } unless @collection.values.first.is_a? Array
 
           add_series(doc, @type)
+
+          add_color(doc)
 
           add_data(doc)
 
@@ -85,10 +86,7 @@ class Chart
 
           add_series(doc)
 
-          doc.xpath("//c:ser").each_with_index do |series, index|
-            series.xpath(".//c:v").first.content = @series[index]
-            series.add_child(@color_fill[index])
-          end
+          add_color(doc)
 
           add_data(doc)
 
@@ -102,6 +100,8 @@ class Chart
 
           add_series(doc)
 
+          add_color(doc)
+
           add_data(doc)
 
         end
@@ -114,7 +114,7 @@ class Chart
 
   private
 
-  def determine_type(doc)
+  def determine_type(doc) # Still a prototype since sometimes the spreadsheet is done first
 
     return unless @type.nil?
     @type = 'bar' if doc.xpath("//c:barChart").any?
@@ -189,6 +189,73 @@ class Chart
 
   end
 
+  def add_color(doc)
+
+    # '<c:spPr><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></c:spPr></c:dPt><c:dPt><c:idx val="1"/><c:bubble3D val="0"/><c:spPr><a:solidFill><a:schemeClr val="accent5"/></a:solidFill></c:spPr></c:dPt><c:dPt><c:idx val="2"/><c:bubble3D val="0"/><c:spPr><a:solidFill><a:schemeClr val="accent5"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr></a:solidFill></c:spPr></c:dPt><c:dPt><c:idx val="3"/><c:bubble3D val="0"/><c:spPr><a:solidFill><a:schemeClr val="accent4"/></a:solidFill></c:spPr>'
+
+    return if @colors.nil?
+
+    @color_fill = []
+
+    @colors.each do |color|
+
+      if color.nil? or color.to_i > 6
+
+        @color_fill << nil
+
+      elsif color.to_i.zero?
+
+        fill = "<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/></c:spPr>"
+        @color_fill << fill
+
+      elsif color.is_a? Fixnum
+
+        fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></c:spPr>"
+        @color_fill << fill
+
+      elsif color.is_a? Float
+
+        lightness  = [nil, {mod: 20000, off: 80000}, {mod: 40000, off: 60000}, {mod: 60000, off: 40000}, {mod: 75000, off: nil}, {mod: 50000, off: nil}]
+        lum_index  = color.to_s[-1].to_i
+
+        if lum_index.zero?
+          fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"/></a:solidFill></c:spPr>"
+          @color_fill << fill
+          next
+        elsif lum_index > 5
+          @color_fill << nil
+          next
+        end
+
+        fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></c:spPr>" if lum_index <= 3
+        fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></c:spPr>" if lum_index > 3
+        @color_fill << fill
+
+      end
+
+    end
+
+    case @type
+    when 'pie', 'doughnut'
+
+      @color_fill.each_with_index do |color, index|
+        next if color.nil?
+        fill = "<c:dPt><c:idx val=\"#{index}\"/><c:bubble3D val=\"0\"/>#{color}</c:dPt>"
+        doc.xpath("//c:ser").first.add_child(fill)
+      end
+
+    else
+
+      doc.xpath("//c:ser").each_with_index do |series, index|
+        next if @color_fill[index].nil?
+        series.xpath(".//c:v").first.content = @series[index]
+        series.add_child(@color_fill[index])
+      end
+
+    end
+
+  end
+
   def etl_waterfall(doc)
     input = @collection.values
     output = {
@@ -202,14 +269,7 @@ class Chart
 
     @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
-    @color_fill = [
-      "<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/></c:spPr>",
-      "<c:spPr><a:solidFill><a:schemeClr val=\"accent1\"/></a:solidFill></c:spPr>",
-      "<c:spPr><a:solidFill><a:schemeClr val=\"accent6\"/></a:solidFill></c:spPr>",
-      "<c:spPr><a:solidFill><a:schemeClr val=\"accent6\"/></a:solidFill></c:spPr>",
-      "<c:spPr><a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill></c:spPr>",
-      "<c:spPr><a:solidFill><a:schemeClr val=\"accent2\"/></a:solidFill></c:spPr>"
-    ]
+    @colors = [0, 1, 6, 6, 2, 2]
 
     doc.xpath('//c:legend').remove
 
