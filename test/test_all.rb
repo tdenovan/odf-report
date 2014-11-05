@@ -83,17 +83,17 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
 
   # r.add_chart('chart_05', more_things,  :type => 'waterfall', :colors => colors[4])
 
-  r.add_chart("CHART_01", alphabet, :series => 'Pi', :type => 'pie', :colors => colors[0], :labels => true, :legend => false)
+  r.add_chart("CHART_01", alphabet, :series => 'Pi', :type => 'pie', :colors => colors[0])
 
-  r.add_chart("CHART_02", things, :title => 'Mmm... Doughnut...', :type => 'doughnut', :colors => colors[1], :labels => true, :legend => false)
+  r.add_chart("CHART_02", things, :title => 'Mmm... Doughnut...', :type => 'doughnut', :colors => colors[1])
 
-  r.add_chart("CHART_03", column, :series => ['Abc', 'Def', 'Ghi'], :title => 'Columbus', :type => 'column', :colors => colors[2], :labels => true, :legend => false)
+  r.add_chart("CHART_03", column, :series => ['Abc', 'Def', 'Ghi'], :title => 'Columbus', :type => 'column', :colors => colors[2])
 
-  r.add_chart("CHART_04", bar, :series => ['Jkl'], :title => 'Barhopping Chart', :type => 'bar', :colors => colors[3], :labels => true, :legend => false)
+  r.add_chart("CHART_04", bar, :series => ['Jkl'], :title => 'Barhopping Chart', :type => 'bar', :colors => colors[3])
 
-  r.add_chart('chart_05', more_things, :title => 'Don\'t Go Chasing Waterfalls', :type => 'waterfall', :colors => colors[4], :labels => true, :legend => false)
+  r.add_chart('chart_05', more_things, :title => 'Don\'t Go Chasing Waterfalls', :type => 'waterfall', :colors => colors[4])
 
-  r.add_chart("chart_06", bar, :series => ['Jkl', 'Mno', 'Pqr'], :title => 'Barhopping Chart', :type => 'line', :colors => colors[3], :labels => true, :legend => false)
+  r.add_chart("chart_06", bar, :series => ['Jkl', 'Mno', 'Pqr'], :title => 'Barhopping Chart', :type => 'line', :colors => colors[3])
 
   # Image
   # r.add_image('IMAGE_01', File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg'))

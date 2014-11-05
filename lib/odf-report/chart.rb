@@ -16,9 +16,9 @@ class Chart
     @type       = opts[:type]   || nil
     @colors     = opts[:colors] || nil
 
-    @title      = opts[:title]  || nil
-    @legend     = opts[:legend] || nil
-    @labels     = opts[:labels] || nil
+    @title      = opts[:title]  || :default
+    @legend     = opts[:legend] || :default
+    @labels     = opts[:labels] || :default
 
     @file       = opts[:file]   || nil
     @id         = ''
@@ -228,6 +228,7 @@ class Chart
       elsif color.is_a? Fixnum
 
         fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></c:spPr>"
+        fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent1\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
         @color_fill << fill
 
       elsif color.is_a? Float
@@ -237,6 +238,7 @@ class Chart
 
         if lum_index.zero?
           fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"/></a:solidFill></c:spPr>"
+          fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent1\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
           @color_fill << fill
           next
         elsif lum_index > 5
@@ -246,6 +248,8 @@ class Chart
 
         fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></c:spPr>" if lum_index <= 3
         fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></c:spPr>" if lum_index > 3
+        fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if lum_index <= 3 and @type == 'line'
+        fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if lum_index > 3 and @type == 'line'
         @color_fill << fill
 
       end
@@ -275,25 +279,25 @@ class Chart
 
   def add_options(doc)
 
-    doc.xpath("//c:autoTitleDeleted").first['val'] = 1
-    doc.xpath("//c:title").remove
-    doc.xpath("//c:dLbls").remove
-    doc.xpath("//c:legend").remove
+    doc.xpath("//c:autoTitleDeleted").first['val'] = 1 unless @title == :default
+    doc.xpath("//c:title").remove unless @title == :default
+    doc.xpath("//c:dLbls").remove unless @labels == :default
+    doc.xpath("//c:legend").remove unless @legend == :default
 
-    if @title
+    if @title.is_a? String
       title_temp = '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr/></a:pPr><a:r><a:rPr lang="en-US"/><a:t>New Title</a:t></a:r></a:p></c:rich></c:tx><c:layout/><c:overlay val="0"/></c:title>'
       doc.xpath("//c:chart").first.add_child(title_temp)
       doc.xpath("//a:t").first.content = @title
     end
 
-    if @labels and (@type == 'pie' or @type == 'doughnut')
+    if @labels == :enabled and (@type == 'pie' or @type == 'doughnut')
       labels_temp = "<c:dLbls><c:dLblPos val=\"outEnd\"/><c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"1\"/><c:showSerName val=\"0\"/><c:showPercent val=\"1\"/><c:showBubbleSize val=\"0\"/><c:separator/><c:showLeaderLines val=\"1\"/></c:dLbls>"
       doc.xpath("//c:ser").first.add_child(labels_temp)
       doc.xpath("//c:dLblPos").first.remove if @type == 'doughnut'
     end
 
-    if @legend
-      legend_temp = "<c:legend><c:legendPos val=\"r\"/><c:layout/><c:overlay val=\"0\"/></c:legend>"
+    if @legend == :enabled
+      legend_temp = "<c:legend><c:legendPos val=\"b\"/><c:layout/><c:overlay val=\"0\"/></c:legend>"
       doc.xpath("//c:chart").first.add_child(legend_temp)
     end
 
@@ -301,7 +305,6 @@ class Chart
     when 'bar', 'column', 'waterfall'
       doc.xpath("//c:gapWidth").first['val'] = 50
       doc.xpath("//c:barChart").first.add_child("<c:overlap val=\"-50\"/>")
-      # debugger
       doc.xpath("//c:catAx//c:tickLblPos").first['val'] = "low" unless doc.xpath("//c:catAx//c:delete").first['val'] == '1' or doc.xpath("//c:valAx//c:delete").first['val'] == '1'
     end
 
