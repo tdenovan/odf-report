@@ -3,7 +3,7 @@ module ODFReport
 class Report
 
   FILES_TO_UPDATE = {
-    doc: ['word/document.xml', /chart/, RelationshipManager::RELATIONSHIP_FILE],
+    doc: ['word/document.xml', /chart/, /drawing/, RelationshipManager::RELATIONSHIP_FILE],
     excel: ['xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml']
   }
 
@@ -116,7 +116,7 @@ class Report
     @file.update_content do |file|
 
       file.update_files(*FILES_TO_UPDATE[@file_type]) do |txt, filename|
-puts filename
+
         parse_document(txt) do |doc|
           @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
           @image_manager.find_image_ids(doc)

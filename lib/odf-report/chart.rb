@@ -228,7 +228,7 @@ class Chart
       elsif color.is_a? Fixnum
 
         fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></c:spPr>"
-        fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent1\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
+        fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
         @color_fill << fill
 
       elsif color.is_a? Float
@@ -238,7 +238,7 @@ class Chart
 
         if lum_index.zero?
           fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"/></a:solidFill></c:spPr>"
-          fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent1\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
+          fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
           @color_fill << fill
           next
         elsif lum_index > 5
@@ -279,7 +279,7 @@ class Chart
 
   def add_options(doc)
 
-    doc.xpath("//c:autoTitleDeleted").first['val'] = 1 unless @title == :default
+    doc.xpath("//c:autoTitleDeleted").first['val'] = 1
     doc.xpath("//c:title").remove unless @title == :default
     doc.xpath("//c:dLbls").remove unless @labels == :default
     doc.xpath("//c:legend").remove unless @legend == :default
@@ -292,6 +292,7 @@ class Chart
 
     if @labels == :enabled and (@type == 'pie' or @type == 'doughnut')
       labels_temp = "<c:dLbls><c:dLblPos val=\"outEnd\"/><c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"1\"/><c:showSerName val=\"0\"/><c:showPercent val=\"1\"/><c:showBubbleSize val=\"0\"/><c:separator/><c:showLeaderLines val=\"1\"/></c:dLbls>"
+      # labels_temp = "<c:dLbls><c:spPr><a:solidFill><a:schemeClr val=\"bg1\"/></a:solidFill></c:spPr><c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"1\"/><c:showSerName val=\"0\"/><c:showPercent val=\"1\"/><c:showBubbleSize val=\"0\"/><c:separator/><c:showLeaderLines val=\"1\"/></c:dLbls>" if @type == 'doughnut'
       doc.xpath("//c:ser").first.add_child(labels_temp)
       doc.xpath("//c:dLblPos").first.remove if @type == 'doughnut'
     end

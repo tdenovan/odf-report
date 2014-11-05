@@ -28,6 +28,10 @@ task :test_bchart do
   require './test/test_bchart.rb'
 end
 
+task :test_dchart do
+  require './test/test_dchart.rb'
+end
+
 task :test_wchart do
   require './test/test_wchart.rb'
 end
