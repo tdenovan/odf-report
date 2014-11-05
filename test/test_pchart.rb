@@ -2,16 +2,18 @@ require './lib/odf-report'
 require 'faker'
 
 hash = {}
+colors = []
 
 6.times do
   hash[Faker::Lorem.word] = rand(1..20)
+  colors << "#{rand(1..6)}.#{rand(1...6)}".to_f
 end
 
-colors = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
+
 
 report = ODFReport::Report.new("test/templates/temp_piechart.docx") do |r|
 
-  r.add_chart("CHART_01", hash, :series => 'Hello', :title => 'Goodbye', :type => 'pie', :colors => colors)
+  r.add_chart("CHART_01", hash, :series => 'Hello', :type => 'pie', :colors => colors)
 
 end
 

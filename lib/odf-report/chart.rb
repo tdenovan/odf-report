@@ -3,24 +3,27 @@ module ODFReport
 class Chart
   include Nested
 
-  attr_accessor :name, :collection, :series, :title, :type, :file, :id, :target, :excel
+  attr_accessor :name, :collection, :series, :title, :type, :legend, :labels, :file, :id, :target, :excel
 
   @@id_target = {}
   @@name_id = {}
 
   def initialize(opts)
-    @name             = opts[:name]
-    @collection       = opts[:collection]
+    @name       = opts[:name]
+    @collection = opts[:collection]
 
-    @series           = opts[:series] || nil
-    @title            = opts[:title] || nil
-    @type             = opts[:type] || nil
-    @file             = opts[:file] || nil
-    @colors           = opts[:colors] || nil
+    @series     = opts[:series] || nil
+    @type       = opts[:type]   || nil
+    @colors     = opts[:colors] || nil
 
-    @id               = ''
-    @target           = ''
-    @excel            = ''
+    @title      = opts[:title]  || nil
+    @legend     = opts[:legend] || nil
+    @labels     = opts[:labels] || nil
+
+    @file       = opts[:file]   || nil
+    @id         = ''
+    @target     = ''
+    @excel      = ''
   end
 
   def replace!(doc, filename, row = nil)
@@ -71,7 +74,7 @@ class Chart
 
         when 'pie', 'doughnut' # For Pie/Doughnut Charts
 
-          @series = [@title] unless @series.is_a? Array
+          @series = [@series] unless @series.is_a? Array
           @collection.each { |k, v| @collection[k] = [v] } unless @collection.values.first.is_a? Array
 
           add_series(doc, @type)
@@ -79,6 +82,8 @@ class Chart
           add_color(doc)
 
           add_data(doc)
+
+          add_options(doc)
 
         when 'waterfall' # For Waterfall charts
 
@@ -89,6 +94,8 @@ class Chart
           add_color(doc)
 
           add_data(doc)
+
+          add_options(doc)
 
         when 'bar', 'column' # For Bar/Column Charts
 
@@ -103,6 +110,24 @@ class Chart
           add_color(doc)
 
           add_data(doc)
+
+          add_options(doc)
+
+        when 'line' # For Line Charts
+
+          if @series.length < @collection.values.first.length
+            @series << rand(65..91).chr until @series.length == @collection.values.first.length
+          elsif @series.length < @collection.values.first.length
+            @series.pop until @series.length == @collection.values.first.length
+          end
+
+          add_series(doc, @type)
+
+          add_color(doc)
+
+          add_data(doc)
+
+          add_options(doc)
 
         end
 
@@ -154,12 +179,6 @@ class Chart
     doc.xpath("//c:ser//c:v").first.content = @series if @series.class == String
     doc.xpath("//c:tx//c:v").each_with_index { |name, index| name.content = @series[index] } if @series.class == Array
 
-    doc.xpath("//c:title").remove
-    if !!@title
-      title_temp = '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr/></a:pPr><a:r><a:rPr lang="en-US"/><a:t>New Title</a:t></a:r></a:p></c:rich></c:tx><c:layout/><c:overlay val="0"/></c:title>'
-      doc.xpath("//c:chart").first.add_child(title_temp)
-      doc.xpath("//a:t").first.content = @title
-    end
 
   end
 
@@ -190,8 +209,6 @@ class Chart
   end
 
   def add_color(doc)
-
-    # '<c:spPr><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></c:spPr></c:dPt><c:dPt><c:idx val="1"/><c:bubble3D val="0"/><c:spPr><a:solidFill><a:schemeClr val="accent5"/></a:solidFill></c:spPr></c:dPt><c:dPt><c:idx val="2"/><c:bubble3D val="0"/><c:spPr><a:solidFill><a:schemeClr val="accent5"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr></a:solidFill></c:spPr></c:dPt><c:dPt><c:idx val="3"/><c:bubble3D val="0"/><c:spPr><a:solidFill><a:schemeClr val="accent4"/></a:solidFill></c:spPr>'
 
     return if @colors.nil?
 
@@ -256,6 +273,40 @@ class Chart
 
   end
 
+  def add_options(doc)
+
+    doc.xpath("//c:autoTitleDeleted").first['val'] = 1
+    doc.xpath("//c:title").remove
+    doc.xpath("//c:dLbls").remove
+    doc.xpath("//c:legend").remove
+
+    if @title
+      title_temp = '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr/></a:pPr><a:r><a:rPr lang="en-US"/><a:t>New Title</a:t></a:r></a:p></c:rich></c:tx><c:layout/><c:overlay val="0"/></c:title>'
+      doc.xpath("//c:chart").first.add_child(title_temp)
+      doc.xpath("//a:t").first.content = @title
+    end
+
+    if @labels and (@type == 'pie' or @type == 'doughnut')
+      labels_temp = "<c:dLbls><c:dLblPos val=\"outEnd\"/><c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"1\"/><c:showSerName val=\"0\"/><c:showPercent val=\"1\"/><c:showBubbleSize val=\"0\"/><c:separator/><c:showLeaderLines val=\"1\"/></c:dLbls>"
+      doc.xpath("//c:ser").first.add_child(labels_temp)
+      doc.xpath("//c:dLblPos").first.remove if @type == 'doughnut'
+    end
+
+    if @legend
+      legend_temp = "<c:legend><c:legendPos val=\"r\"/><c:layout/><c:overlay val=\"0\"/></c:legend>"
+      doc.xpath("//c:chart").first.add_child(legend_temp)
+    end
+
+    case @type
+    when 'bar', 'column', 'waterfall'
+      doc.xpath("//c:gapWidth").first['val'] = 50
+      doc.xpath("//c:barChart").first.add_child("<c:overlap val=\"-50\"/>")
+      # debugger
+      doc.xpath("//c:catAx//c:tickLblPos").first['val'] = "low" unless doc.xpath("//c:catAx//c:delete").first['val'] == '1' or doc.xpath("//c:valAx//c:delete").first['val'] == '1'
+    end
+
+  end
+
   def etl_waterfall(doc)
     input = @collection.values
     output = {
@@ -269,7 +320,7 @@ class Chart
 
     @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
-    @colors = [0, 1, 6, 6, 2, 2]
+    @colors = [0, 1, 5.3, 5.3, 3.3, 3.3]
 
     doc.xpath('//c:legend').remove
 

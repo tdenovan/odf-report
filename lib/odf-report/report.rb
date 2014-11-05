@@ -58,7 +58,7 @@ class Report
   end
 
   def add_chart(chart_name, collection, opts={})
-    opts.merge!(:name => chart_name, :collection => collection, file: @file)
+    opts.merge!(:name => chart_name, :collection => collection, :file => @file)
     chart = Chart.new(opts)
     @charts << chart
     @chart_manager.add_charts(chart_name, collection, opts={})

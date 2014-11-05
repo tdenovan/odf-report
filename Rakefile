@@ -32,6 +32,10 @@ task :test_wchart do
   require './test/test_wchart.rb'
 end
 
+task :test_lchart do
+  require './test/test_lchart.rb'
+end
+
 task :test_all do
   require './test/test_all.rb'
 end
