@@ -31,7 +31,7 @@ class Spreadsheet
 
       etl_waterfall unless @series == ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
-    when 'bar', 'column' # For Bar/Column Charts
+    when 'bar', 'column', 'line' # For Bar/Column/Line Charts
 
       if @series.length < @collection.values.first.length # If number of series names doesn't match the collection values
 
@@ -73,6 +73,7 @@ class Spreadsheet
           else
 
             val = @collection.values[row - 1][col - 1]
+            val = 0 if @collection.values[row - 1][col - 1].nil?
             c_node = "<c r=\"#{(col + 65).chr}#{row + 1}\"><v>#{val}</v></c>"
             doc.xpath("//xmlns:row")[row].add_child(c_node)
 
