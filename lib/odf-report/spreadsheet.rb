@@ -32,7 +32,7 @@ class Spreadsheet
       etl_waterfall unless @series == ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
     when 'bar', 'column' # For Bar/Column Charts
-      # debugger
+
       if @series.length < @collection.values.first.length # If number of series names doesn't match the collection values
 
         @series << rand(65..91).chr until @series.length == @collection.values.first.length

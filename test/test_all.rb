@@ -73,16 +73,6 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
   r.add_field("TEXT_02", Faker::Company.catch_phrase)
 
   # Chart
-  # r.add_chart("CHART_01", alphabet, :series => 'Pi', :type => 'pie', :colors => colors[0])
-
-  # r.add_chart("CHART_02", things, :series => 'Mmm... Doughnut...', :type => 'doughnut', :colors => colors[1])
-
-  # r.add_chart("CHART_03", column, :series => ['Abc', 'Def', 'Ghi'], :type => 'column', :colors => colors[2])
-
-  # r.add_chart("CHART_04", bar, :series => ['Jkl'],  :type => 'bar', :colors => colors[3])
-
-  # r.add_chart('chart_05', more_things,  :type => 'waterfall', :colors => colors[4])
-
   r.add_chart("CHART_01", alphabet, :series => 'Pi', :type => 'pie', :colors => colors[0])
 
   r.add_chart("CHART_02", things, :title => 'Mmm... Doughnut...', :type => 'doughnut', :colors => colors[1])

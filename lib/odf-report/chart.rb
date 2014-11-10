@@ -19,6 +19,8 @@ class Chart
     @title      = opts[:title]  || :default
     @legend     = opts[:legend] || :default
     @labels     = opts[:labels] || :default
+    @x_axis     = opts[:x_axis] || :default
+    @y_axis     = opts[:y_axis] || :default
 
     @file       = opts[:file]   || nil
     @id         = ''
@@ -101,7 +103,7 @@ class Chart
 
           if @series.length < @collection.values.first.length
             @series << rand(65..91).chr until @series.length == @collection.values.first.length
-          elsif @series.length < @collection.values.first.length
+          elsif @series.length > @collection.values.first.length
             @series.pop until @series.length == @collection.values.first.length
           end
 
@@ -117,7 +119,7 @@ class Chart
 
           if @series.length < @collection.values.first.length
             @series << rand(65..91).chr until @series.length == @collection.values.first.length
-          elsif @series.length < @collection.values.first.length
+          elsif @series.length > @collection.values.first.length
             @series.pop until @series.length == @collection.values.first.length
           end
 
@@ -178,7 +180,6 @@ class Chart
 
     doc.xpath("//c:ser//c:v").first.content = @series if @series.class == String
     doc.xpath("//c:tx//c:v").each_with_index { |name, index| name.content = @series[index] } if @series.class == Array
-
 
   end
 
@@ -292,7 +293,6 @@ class Chart
 
     if @labels == :enabled and (@type == 'pie' or @type == 'doughnut')
       labels_temp = "<c:dLbls><c:dLblPos val=\"outEnd\"/><c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"1\"/><c:showSerName val=\"0\"/><c:showPercent val=\"1\"/><c:showBubbleSize val=\"0\"/><c:separator/><c:showLeaderLines val=\"1\"/></c:dLbls>"
-      # labels_temp = "<c:dLbls><c:spPr><a:solidFill><a:schemeClr val=\"bg1\"/></a:solidFill></c:spPr><c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"1\"/><c:showSerName val=\"0\"/><c:showPercent val=\"1\"/><c:showBubbleSize val=\"0\"/><c:separator/><c:showLeaderLines val=\"1\"/></c:dLbls>" if @type == 'doughnut'
       doc.xpath("//c:ser").first.add_child(labels_temp)
       doc.xpath("//c:dLblPos").first.remove if @type == 'doughnut'
     end
@@ -303,7 +303,34 @@ class Chart
     end
 
     case @type
-    when 'bar', 'column', 'waterfall'
+    when 'bar', 'column', 'waterfall', 'line'
+
+      unless @x_axis == :default
+        doc.xpath("//c:catAx//c:delete").first['val'] = 0 if @x_axis == :enabled
+        doc.xpath("//c:catAx//c:delete").first['val'] = 1 if @x_axis == :disabled
+      end
+
+
+      unless @y_axis == :default
+
+        doc.xpath("//c:valAx//c:delete").first['val'] = 0 if @x_axis == :enabled
+        doc.xpath("//c:valAx//c:delete").first['val'] = 1 if @x_axis == :disabled
+
+        case @collection.values.flatten.max.to_s.length
+        when 4, 5, 6 then scale = 'thousands'
+        when 7, 8, 9 then scale = 'millions'
+        when 10, 11, 12 then scale = 'billions'
+        end
+
+        unless scale.nil?
+          scale_temp = "<c:dispUnits><c:builtInUnit val=\"#{scale}\"/><c:dispUnitsLbl><c:layout/></c:dispUnitsLbl></c:dispUnits>"
+          doc.xpath("//c:valAx").first.add_child(scale_temp)
+        end
+
+      end
+
+      return if @type == 'line'
+
       doc.xpath("//c:gapWidth").first['val'] = 50
       doc.xpath("//c:barChart").first.add_child("<c:overlap val=\"-50\"/>")
       doc.xpath("//c:catAx//c:tickLblPos").first['val'] = "low" unless doc.xpath("//c:catAx//c:delete").first['val'] == '1' or doc.xpath("//c:valAx//c:delete").first['val'] == '1'
