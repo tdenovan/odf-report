@@ -292,7 +292,7 @@ class Chart
     end
 
     if @labels == :enabled and (@type == 'pie' or @type == 'doughnut')
-      labels_temp = "<c:dLbls><c:dLblPos val=\"outEnd\"/><c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"1\"/><c:showSerName val=\"0\"/><c:showPercent val=\"1\"/><c:showBubbleSize val=\"0\"/><c:separator/><c:showLeaderLines val=\"1\"/></c:dLbls>"
+      labels_temp = "<c:dLbls><c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz=\"800\"/></a:pPr><a:endParaRPr lang=\"en-US\"/></a:p></c:txPr><c:dLblPos val=\"outEnd\"/><c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"1\"/><c:showSerName val=\"0\"/><c:showPercent val=\"1\"/><c:showBubbleSize val=\"0\"/><c:separator/><c:showLeaderLines val=\"1\"/></c:dLbls>"
       doc.xpath("//c:ser").first.add_child(labels_temp)
       doc.xpath("//c:dLblPos").first.remove if @type == 'doughnut'
     end
@@ -303,20 +303,34 @@ class Chart
     end
 
     case @type
+    when 'pie', 'doughnut'
+      line_temp = "<a:ln><a:solidFill><a:srgbClr val=\"FFFFFF\"/></a:solidFill></a:ln>"
+      doc.xpath("//c:ser//c:tx").first.add_next_sibling("<c:spPr></c:spPr>")
+      doc.xpath("//c:dPt//c:spPr").each { |xml| xml.add_child(line_temp) }
+
     when 'bar', 'column', 'waterfall', 'line'
 
       unless @x_axis == :default
         doc.xpath("//c:catAx//c:delete").first['val'] = 0 if @x_axis == :enabled
-        doc.xpath("//c:catAx//c:delete").first['val'] = 1 if @x_axis == :disabled
-      end
+        # doc.xpath("//c:catAx//c:delete").first['val'] = 1 if @x_axis == :disabled
+        doc.xpath("//c:catAx//c:majorTickMark").first['val'] = 'none' if @x_axis == :disabled
+        doc.xpath("//c:catAx//c:tickLblPos").first['val'] = 'none' if @x_axis == :disabled
 
+
+        max_length = @collection.keys.sort_by { |cat| cat.length }.last.length
+        if @x_axis == :enabled and max_length > 25
+          font_temp = "<c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz=\"600\"/></a:pPr><a:endParaRPr lang=\"en-US\"/></a:p></c:txPr>"
+          doc.xpath("//c:tickLblPos").first.add_next_sibling(font_temp)
+        end
+
+      end
 
       unless @y_axis == :default
 
-        doc.xpath("//c:valAx//c:delete").first['val'] = 0 if @x_axis == :enabled
-        doc.xpath("//c:valAx//c:delete").first['val'] = 1 if @x_axis == :disabled
+        doc.xpath("//c:valAx//c:delete").first['val'] = 0 if @y_axis == :enabled
+        doc.xpath("//c:valAx//c:delete").first['val'] = 1 if @y_axis == :disabled
 
-        case @collection.values.flatten.max.to_s.length
+        case @collection.values.flatten.max.to_i.to_s.length
         when 4, 5, 6 then scale = 'thousands'
         when 7, 8, 9 then scale = 'millions'
         when 10, 11, 12 then scale = 'billions'
@@ -327,13 +341,23 @@ class Chart
           doc.xpath("//c:valAx").first.add_child(scale_temp)
         end
 
+        # if @collection.values.flatten.max > 1
+        #   tick = []
+        #   max = [@collection.values.flatten.max, -(@collection.values.flatten.min)].max / 2
+        #   tick = max.round(2 - max.to_i.to_s.length) / 2
+        #   tick_temp = "<c:majorUnit val=\"#{tick}\"/>"
+        #   doc.xpath("//c:valAx").first.add_child(tick_temp)
+        # end
+
       end
+
+      doc.xpath("//c:catAx//c:tickLblPos").first['val'] = "low" unless doc.xpath("//c:catAx//c:delete").first['val'] == '1' or doc.xpath("//c:valAx//c:delete").first['val'] == '1'
 
       return if @type == 'line'
 
       doc.xpath("//c:gapWidth").first['val'] = 50
       doc.xpath("//c:barChart").first.add_child("<c:overlap val=\"-50\"/>")
-      doc.xpath("//c:catAx//c:tickLblPos").first['val'] = "low" unless doc.xpath("//c:catAx//c:delete").first['val'] == '1' or doc.xpath("//c:valAx//c:delete").first['val'] == '1'
+
     end
 
   end
