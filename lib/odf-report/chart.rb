@@ -21,6 +21,7 @@ class Chart
     @labels     = opts[:labels] || :default
     @x_axis     = opts[:x_axis] || :default
     @y_axis     = opts[:y_axis] || :default
+    @f_size     = opts[:f_size] || :default
 
     @file       = opts[:file]   || nil
     @id         = ''
@@ -302,6 +303,11 @@ class Chart
       doc.xpath("//c:chart").first.add_child(legend_temp)
     end
 
+    unless @f_size == :default
+      font_temp = "<c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz=\"#{@f_size}00\"/></a:pPr><a:endParaRPr lang=\"en-US\"/></a:p></c:txPr>"
+      doc.xpath("//c:chart").first.add_next_sibling(font_temp)
+    end
+
     case @type
     when 'pie', 'doughnut'
       line_temp = "<a:ln><a:solidFill><a:srgbClr val=\"FFFFFF\"/></a:solidFill></a:ln>"
@@ -330,7 +336,7 @@ class Chart
         doc.xpath("//c:valAx//c:delete").first['val'] = 0 if @y_axis == :enabled
         doc.xpath("//c:valAx//c:delete").first['val'] = 1 if @y_axis == :disabled
 
-        case @collection.values.flatten.max.to_i.to_s.length
+        case @collection.values.flatten.max.to_s.length
         when 4, 5, 6 then scale = 'thousands'
         when 7, 8, 9 then scale = 'millions'
         when 10, 11, 12 then scale = 'billions'
