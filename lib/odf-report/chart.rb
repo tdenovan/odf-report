@@ -22,6 +22,7 @@ class Chart
     @x_axis     = opts[:x_axis] || :default
     @y_axis     = opts[:y_axis] || :default
     @f_size     = opts[:f_size] || :default
+    @g_line     = opts[:g_line] || :default
 
     @file       = opts[:file]   || nil
     @id         = ''
@@ -230,7 +231,7 @@ class Chart
       elsif color.is_a? Fixnum
 
         fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></c:spPr>"
-        fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
+        fill = "<c:spPr><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
         @color_fill << fill
 
       elsif color.is_a? Float
@@ -240,7 +241,7 @@ class Chart
 
         if lum_index.zero?
           fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"/></a:solidFill></c:spPr>"
-          fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
+          fill = "<c:spPr><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
           @color_fill << fill
           next
         elsif lum_index > 5
@@ -250,8 +251,8 @@ class Chart
 
         fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></c:spPr>" if lum_index <= 3
         fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></c:spPr>" if lum_index > 3
-        fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if lum_index <= 3 and @type == 'line'
-        fill = "<c:spPr><a:ln><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill><a:ln><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if lum_index > 3 and @type == 'line'
+        fill = "<c:spPr><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if lum_index <= 3 and @type == 'line'
+        fill = "<c:spPr><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if lum_index > 3 and @type == 'line'
         @color_fill << fill
 
       end
@@ -304,9 +305,11 @@ class Chart
     end
 
     unless @f_size == :default
-      font_temp = "<c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz=\"#{@f_size}00\"/></a:pPr><a:endParaRPr lang=\"en-US\"/></a:p></c:txPr>"
+      @f_size = 8 if @f_size == :enabled
+      font_temp = "<c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz=\"#{@f_size}00\"><a:latin typeface=\"Georgia\"/><a:cs typeface=\"Georgia\"/></a:defRPr></a:pPr><a:endParaRPr lang=\"en-US\"/></a:p></c:txPr>"
       doc.xpath("//c:chart").first.add_next_sibling(font_temp)
     end
+
 
     case @type
     when 'pie', 'doughnut'
@@ -316,9 +319,15 @@ class Chart
 
     when 'bar', 'column', 'waterfall', 'line'
 
+      unless @g_line == :default
+        grid_temp = "<c:majorGridlines><c:spPr><a:ln cmpd=\"sng\" w=\"3175\"><a:solidFill><a:schemeClr val=\"bg1\"><a:lumMod val=\"75000\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:majorGridlines>"
+        doc.xpath("//c:valAx//c:majorGridlines").remove
+        doc.xpath("//c:valAx//c:axPos").first.add_next_sibling(grid_temp) unless @g_line == :disabled
+      end
+
       unless @x_axis == :default
+
         doc.xpath("//c:catAx//c:delete").first['val'] = 0 if @x_axis == :enabled
-        # doc.xpath("//c:catAx//c:delete").first['val'] = 1 if @x_axis == :disabled
         doc.xpath("//c:catAx//c:majorTickMark").first['val'] = 'none' if @x_axis == :disabled
         doc.xpath("//c:catAx//c:tickLblPos").first['val'] = 'none' if @x_axis == :disabled
 
@@ -345,17 +354,44 @@ class Chart
         unless scale.nil?
           scale_temp = "<c:dispUnits><c:builtInUnit val=\"#{scale}\"/><c:dispUnitsLbl><c:layout/></c:dispUnitsLbl></c:dispUnits>"
           doc.xpath("//c:valAx").first.add_child(scale_temp)
+          doc.xpath("//c:valAx//c:dispUnitsLbl").remove if @y_axis == :noscale
         end
 
-        # if @collection.values.flatten.max > 1
-        #   tick = []
-        #   max = [@collection.values.flatten.max, -(@collection.values.flatten.min)].max / 2
-        #   tick = max.round(2 - max.to_i.to_s.length) / 2
-        #   tick_temp = "<c:majorUnit val=\"#{tick}\"/>"
-        #   doc.xpath("//c:valAx").first.add_child(tick_temp)
-        # end
+        max = @collection.values.flatten.max
+        min = @collection.values.flatten.min
+
+        def roundup(x)
+          x >= 1 ? y = 10 ** Math.log10(x).to_i : y = 10 ** (Math.log10(x).to_i - 1)
+          return x if x % y == 0   # already a factor of 10
+          return x + y - (x % y)  # go to nearest factor 10
+        end
+
+        max <= 0 ? max = 0 : max = roundup(max)
+        min >= 0 ? min = 0 : min = -roundup(-min)
+
+        if max > 0 and min < 0
+
+          max_10 = Math.log10(max).to_i
+          min_10 = Math.log10(-min).to_i
+
+          if max_10 > min_10
+            min = -(10 ** max_10)
+          elsif max_10 < min_10
+            max = 10 ** min_10
+          end
+
+        end
+
+        tick = (max - min) / 2
+
+        max_min_temp = "<c:max val=\"#{max}\"/><c:min val=\"#{min}\"/>"
+        tick_temp = "<c:majorUnit val=\"#{tick}\"/>"
+
+        doc.xpath("//c:valAx//c:scaling").first.add_child(max_min_temp)
+        doc.xpath("//c:valAx").first.add_child(tick_temp)
 
       end
+
 
       doc.xpath("//c:catAx//c:tickLblPos").first['val'] = "low" unless doc.xpath("//c:catAx//c:delete").first['val'] == '1' or doc.xpath("//c:valAx//c:delete").first['val'] == '1'
 
