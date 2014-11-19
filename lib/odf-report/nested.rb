@@ -14,7 +14,7 @@ module ODFReport
       field = Text.new(opts, &block)
       @texts << field
     end
-    
+
     def add_image(name, data_field)
       @images << Image.new(name, nil, data_field)
     end
@@ -31,6 +31,7 @@ module ODFReport
       opts.merge!(:name => chart_name, :collection => collection)
       chart = Chart.new(opts)
       @charts << chart
+      @chart_manager.add_charts(chart_name, collection, opts={})
 
       yield(chart)
     end

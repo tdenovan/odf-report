@@ -345,7 +345,7 @@ class Chart
         doc.xpath("//c:valAx//c:delete").first['val'] = 0 if @y_axis == :enabled
         doc.xpath("//c:valAx//c:delete").first['val'] = 1 if @y_axis == :disabled
 
-        case @collection.values.flatten.max.to_s.length
+        case @collection.values.flatten.max.to_i.to_s.length
         when 4, 5, 6 then scale = 'thousands'
         when 7, 8, 9 then scale = 'millions'
         when 10, 11, 12 then scale = 'billions'
@@ -359,6 +359,9 @@ class Chart
 
         max = @collection.values.flatten.max
         min = @collection.values.flatten.min
+
+        max = @collection.values.map {|x| x.inject(:+) }.max if @type == 'waterfall'
+        min = @collection.values.map {|x| x.inject(:+) }.min if @type == 'waterfall'
 
         def roundup(x)
           x >= 1 ? y = 10 ** Math.log10(x).to_i : y = 10 ** (Math.log10(x).to_i - 1)

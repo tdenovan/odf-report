@@ -13,6 +13,7 @@ class Table
     @texts = []
     @tables = []
     @images = []
+    @charts = []
 
     @template_rows = []
     @header           = opts[:header].nil? ? true : opts[:header]
@@ -44,6 +45,7 @@ class Table
         @images.each    { |i| @image_manager.register_new_image(i.dup, new_node, data_item) }
         @texts.each     { |t| t.replace!(new_node, data_item) }
         @fields.each    { |f| f.replace!(new_node, data_item) }
+        @charts.each    { |c| c.replace!(new_node, data_item) }
 
         table.add_child(new_node)
 
