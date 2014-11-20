@@ -117,6 +117,7 @@ class Report
 
       file.update_files(*FILES_TO_UPDATE[@file_type]) do |txt, filename|
         puts filename
+
         parse_document(txt) do |doc|
           @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
           @image_manager.find_image_ids(doc)

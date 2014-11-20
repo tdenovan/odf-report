@@ -22,7 +22,7 @@ class Table
 
   def replace!(doc, row = nil)
 
-    if doc.namespaces.include? 'xmlns:w' # Look through document.xml
+    if doc.namespaces.include? 'xmlns:w' and doc.xpath("//w:document").any? # Look through document.xml
 
       return unless table = find_table_node(doc)
 

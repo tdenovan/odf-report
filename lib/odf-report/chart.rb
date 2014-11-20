@@ -72,6 +72,9 @@ class Chart
 
       if filename.include? @@id_target[@@name_id[@name]]
 
+        # function - work in progress
+        # fix_invalid_values
+
         determine_type(doc)
 
         case @type
@@ -405,6 +408,12 @@ class Chart
 
     end
 
+  end
+
+  def fix_invalid_values
+    @collection.values.each do |values|
+      values.map! { |value| value == nil ? 0 : value}.map! { |value| value.is_a? String ? value.to_i : value }
+    end
   end
 
   def etl_waterfall(doc)
