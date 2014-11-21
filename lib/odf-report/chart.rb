@@ -42,7 +42,9 @@ class Chart
 
       chart_name = @name
       chart_id = @@name_id[chart_name]
-      chart_target = @@id_target[chart_id].split("\/").last
+      chart_target = @@id_target[chart_id]
+      return if chart_target.nil?
+      chart_target = chart_target.split("\/").last
 
       if /#{Regexp.quote(chart_target)}/ === filename
 
@@ -66,10 +68,12 @@ class Chart
 
     elsif /word\/document/ === filename # Look into word/document.xml
 
-      @@name_id[@name] = doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"}).attr('id').value
+      id = doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"})
+      @@name_id[@name] = id.attr('id').value unless id.empty?
 
     elsif /charts\/chart/ === filename # Look through chart.xml
 
+      return if @@id_target[@@name_id[@name]].nil?
       if filename.include? @@id_target[@@name_id[@name]]
 
         # function - work in progress
@@ -94,7 +98,7 @@ class Chart
 
         when 'waterfall' # For Waterfall charts
 
-          etl_waterfall(doc) unless @series == ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
+          etl_waterfall(doc)
 
           add_series(doc)
 
@@ -401,7 +405,7 @@ class Chart
 
       doc.xpath("//c:catAx//c:tickLblPos").first['val'] = "low" unless doc.xpath("//c:catAx//c:delete").first['val'] == '1' or doc.xpath("//c:valAx//c:delete").first['val'] == '1'
 
-      return if @type == 'line'
+      return if @type == 'line' or @type == 'waterfall'
 
       doc.xpath("//c:gapWidth").first['val'] = 50
       doc.xpath("//c:barChart").first.add_child("<c:overlap val=\"-50\"/>")
@@ -417,6 +421,9 @@ class Chart
   end
 
   def etl_waterfall(doc)
+
+    return if @series == ['Fill', 'Base', 'Ri', 'Rise', 'Fa', 'Fall']
+
     input = @collection.values
     output = {
       'fill' => [],
@@ -427,7 +434,7 @@ class Chart
       'con-' => []
     }
 
-    @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
+    @series = ['Fill', 'Base', 'Ri', 'Rise', 'Fa', 'Fall']
 
     @colors = [0, 1, 5.3, 5.3, 3.3, 3.3]
 

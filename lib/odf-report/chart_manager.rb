@@ -24,14 +24,18 @@ module ODFReport
 
       if filename == 'word/document.xml'
         @charts.each do |chart|
-          chart.id = doc.xpath("//w:drawing//wp:docPr[@title='#{chart.name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"}).attr('id').value
+          id = doc.xpath("//w:drawing//wp:docPr[@title='#{chart.name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"})
+          next if id.empty?
+          chart.id = id.attr('id').value
         end
       end
 
       return unless filename.include? 'charts/_rels'
 
       @charts.each do |chart|
-        target = @relationship_manager.get_relationship(chart.id)[:target].split("/").last
+        target = @relationship_manager.get_relationship(chart.id)
+        next if target.nil?
+        target = target[:target].split("/").last
         next unless /#{Regexp.quote(target)}/ === filename
         excel_path = doc.xpath("//xmlns:Relationship").first['Target']
         chart.excel = 'word' + excel_path[2..-1]

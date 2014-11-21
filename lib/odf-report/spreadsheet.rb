@@ -29,7 +29,7 @@ class Spreadsheet
 
     when 'waterfall' # For Waterfall Charts
 
-      etl_waterfall unless @series == ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
+      etl_waterfall unless @series == ['Fill', 'Base', 'Ri', 'Rise', 'Fa', 'Fall']
 
     when 'bar', 'column', 'line' # For Bar/Column/Line Charts
 
@@ -136,7 +136,7 @@ class Spreadsheet
       'con-' => []
     }
 
-    @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
+    @series = ['Fill', 'Base', 'Ri', 'Rise', 'Fa', 'Fall']
 
     sum = 0
 
