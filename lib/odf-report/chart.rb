@@ -226,43 +226,50 @@ class Chart
 
     @colors.each do |color|
 
-      if color.nil? or color.to_i > 6
+      if color.nil?
 
-        @color_fill << nil
+        color_temp = nil
+
+      elsif color.is_a? String and color =~ /#\h{3,6}/
+
+        color_temp = "<a:solidFill><a:srgbClr val=\"#{color[1..6]}\"/></a:solidFill>"
 
       elsif color.to_i.zero?
 
-        fill = "<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/></c:spPr>"
-        @color_fill << fill
+        color_temp = "<a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/>"
 
       elsif color.is_a? Fixnum
 
-        fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></c:spPr>"
-        fill = "<c:spPr><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
-        @color_fill << fill
+        color_temp = "<a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill>"
 
       elsif color.is_a? Float
 
         lightness  = [nil, {mod: 20000, off: 80000}, {mod: 40000, off: 60000}, {mod: 60000, off: 40000}, {mod: 75000, off: nil}, {mod: 50000, off: nil}]
         lum_index  = color.to_s[-1].to_i
 
-        if lum_index.zero?
-          fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"/></a:solidFill></c:spPr>"
-          fill = "<c:spPr><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color}\"/></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color}\"></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if @type == 'line'
-          @color_fill << fill
-          next
-        elsif lum_index > 5
-          @color_fill << nil
-          next
+        case lum_index
+        when 0 then color_temp = "<a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"/></a:solidFill>"
+        when 1, 2, 3 then color_temp = "<a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill>"
+        when 4, 5 then color_temp = "<a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill>"
+        else
+          color_temp = nil
         end
 
-        fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></c:spPr>" if lum_index <= 3
-        fill = "<c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></c:spPr>" if lum_index > 3
-        fill = "<c:spPr><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/><a:lumOff val=\"#{lightness[lum_index][:off]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if lum_index <= 3 and @type == 'line'
-        fill = "<c:spPr><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr><c:marker><c:spPr><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"accent#{color.to_i}\"><a:lumMod val=\"#{lightness[lum_index][:mod]}\"/></a:schemeClr></a:solidFill></a:ln></c:spPr></c:marker>" if lum_index > 3 and @type == 'line'
-        @color_fill << fill
+      else
+
+        color_temp = nil
 
       end
+
+
+      if color_temp.nil?
+      elsif @type == 'line'
+        color_temp = "<c:spPr><a:ln w=\"12700\">#{color_temp}</a:ln></c:spPr><c:marker><c:spPr>#{color_temp}<a:ln w=\"12700\">#{color_temp}</a:ln></c:spPr></c:marker>"
+      else
+        color_temp = "<c:spPr>#{color_temp}</c:spPr>"
+      end
+
+      @color_fill << color_temp
 
     end
 
@@ -405,9 +412,10 @@ class Chart
 
       doc.xpath("//c:catAx//c:tickLblPos").first['val'] = "low" unless doc.xpath("//c:catAx//c:delete").first['val'] == '1' or doc.xpath("//c:valAx//c:delete").first['val'] == '1'
 
-      return if @type == 'line' or @type == 'waterfall'
-
+      return if @type == 'line'
       doc.xpath("//c:gapWidth").first['val'] = 50
+
+      return if @type == 'waterfall'
       doc.xpath("//c:barChart").first.add_child("<c:overlap val=\"-50\"/>")
 
     end
@@ -436,7 +444,7 @@ class Chart
 
     @series = ['Fill', 'Base', 'Ri', 'Rise', 'Fa', 'Fall']
 
-    @colors = [0, 1, 5.3, 5.3, 3.3, 3.3]
+    @colors = [0, 1, '#FFB600', '#FFB600', 3.3, 3.3]
 
     doc.xpath('//c:legend').remove
 
