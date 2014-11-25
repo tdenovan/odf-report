@@ -58,6 +58,16 @@ class Table
 
   end # replace
 
+
+  def remove!(doc)
+
+    if doc.namespaces.include? 'xmlns:w' and doc.xpath("//w:document").any?
+      return unless table = find_table_node(doc)
+
+      table.remove
+    end
+  end # replace_section
+
 private
 
   def get_next_row

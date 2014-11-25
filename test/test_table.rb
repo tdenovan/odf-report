@@ -22,12 +22,14 @@ report = ODFReport::Report.new("test/templates/temp_table.docx") do |r|
   r.add_field("HEAD_03", 'Address')
   r.add_field("HEAD_04", 'City')
 
-  r.add_table("TABLE_01", @col1, :header=>true) do |t|
-    # t.add_image(:table_image, :image)
-    t.add_column(:field_02, :name)
-    t.add_column(:field_03, :address)
-    t.add_column(:field_04, :city)
-  end
+  r.remove_table 'TABLE_01', nil do |t| end
+
+  # r.add_table("TABLE_01", @col1, :header=>true) do |t|
+  #   # t.add_image(:table_image, :image)
+  #   t.add_column(:field_02, :name)
+  #   t.add_column(:field_03, :address)
+  #   t.add_column(:field_04, :city)
+  # end
 
   # r.add_table("TABLE_02", @col2) do |t|
   #   t.add_column(:field_04, :idx)

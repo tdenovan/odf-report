@@ -300,6 +300,9 @@ class Chart
     doc.xpath("//c:title").remove unless @title == :default
     doc.xpath("//c:dLbls").remove unless @labels == :default
     doc.xpath("//c:legend").remove unless @legend == :default
+    doc.xpath("//c:chartSpace/c:spPr").remove
+
+    doc.xpath("//c:chartSpace").first.add_child("<c:spPr><a:ln><a:noFill/></a:ln></c:spPr>")
 
     if @title.is_a? String
       title_temp = '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr/></a:pPr><a:r><a:rPr lang="en-US"/><a:t>New Title</a:t></a:r></a:p></c:rich></c:tx><c:layout/><c:overlay val="0"/></c:title>'
@@ -399,6 +402,8 @@ class Chart
 
         end
 
+        max = max * 3 / 4 if max.to_s[0] == '2' and @collection.values.flatten.max.to_s[1].to_i < 5
+
         tick = (max - min) / 2
 
         max_min_temp = "<c:max val=\"#{max}\"/><c:min val=\"#{min}\"/>"
@@ -430,7 +435,7 @@ class Chart
 
   def etl_waterfall(doc)
 
-    return if @series == ['Fill', 'Base', 'Ri', 'Rise', 'Fa', 'Fall']
+    return if @series == ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
     input = @collection.values
     output = {
@@ -442,7 +447,7 @@ class Chart
       'con-' => []
     }
 
-    @series = ['Fill', 'Base', 'Ri', 'Rise', 'Fa', 'Fall']
+    @series = ['Fill', 'Base', 'Rise+', 'Rise-', 'Fall+', 'Fall-']
 
     @colors = [0, 1, '#FFB600', '#FFB600', 3.3, 3.3]
 

@@ -21,6 +21,7 @@ class Report
     @tables = []
     @sections = []
     @slides = []
+    @remove_tables = []
     @remove_sections = []
     @remove_slides = []
     @charts = []
@@ -55,6 +56,12 @@ class Report
     @tables << tab
 
     yield(tab)
+  end
+
+  def remove_table(table_name, collection, opts={})
+    opts.merge!(:name => table_name, :collection => collection)
+    tab = Table.new(opts, @image_manager)
+    @remove_tables << tab
   end
 
   def add_chart(chart_name, collection, opts={})
@@ -132,7 +139,8 @@ class Report
           @spreadsheets.each   { |c| c.replace!(doc, filename) } if @file_type == :excel # Extract chart from docx zip and store it locally
 
           # CHANGED by tdenovan. We need a special call to remove template slides, as it can't be done in the replace method as other slides might rely on the template slide
-          @slides.each  { |s| s.remove!(doc) }
+          @slides.each         { |s| s.remove!(doc) }
+          @remove_tables.each  { |t| t.remove!(doc) }
 
         end
 
@@ -159,9 +167,9 @@ private
     doc = Nokogiri::XML(txt)
     yield doc
     txt.replace(doc.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML))
-
   end
 
 end
 
 end
+
