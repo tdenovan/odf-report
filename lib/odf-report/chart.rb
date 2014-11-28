@@ -70,6 +70,7 @@ class Chart
 
       id = doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"})
       @@name_id[@name] = id.attr('id').value unless id.empty?
+      doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/ancestor::*[w:drawing]").remove if @collection.values.flatten.map {|v| v.abs}.sum.zero?
 
     elsif /charts\/chart/ === filename # Look through chart.xml
 
