@@ -18,6 +18,7 @@ class Report
 
     @texts = []
     @fields = []
+    @text_fields = []
     @tables = []
     @sections = []
     @slides = []
@@ -48,6 +49,12 @@ class Report
     opts = {:name => field_tag, :value => value}
     text = Text.new(opts)
     @texts << text
+  end
+
+  def add_text_field(field_tag, value='')
+    opts = {:name => field_tag, :value => value}
+    text_field = TextField.new(opts)
+    @text_fields << text_field
   end
 
   def add_table(table_name, collection, opts={})
@@ -135,6 +142,7 @@ class Report
           @tables.each         { |t| t.replace!(doc) }
           @texts.each          { |t| t.replace!(doc) }
           @fields.each         { |f| f.replace!(doc) }
+          @text_fields.each    { |f| f.replace!(doc, filename) }
           @charts.each         { |c| c.replace!(doc, filename) }
           @spreadsheets.each   { |c| c.replace!(doc, filename) } if @file_type == :excel # Extract chart from docx zip and store it locally
 
