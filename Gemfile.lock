@@ -23,6 +23,7 @@ GEM
       debugger-ruby_core_source (~> 1.3.5)
     debugger-linecache (1.2.0)
     debugger-ruby_core_source (1.3.5)
+    dentaku (1.1.0)
     diff-lcs (1.2.5)
     erubis (2.7.0)
     faker (1.4.3)
@@ -64,6 +65,7 @@ DEPENDENCIES
   binding_of_caller
   bundler (~> 1.6)
   debugger
+  dentaku
   faker
   launchy
   odf-report!

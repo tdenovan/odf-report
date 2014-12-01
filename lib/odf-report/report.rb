@@ -32,6 +32,7 @@ class Report
     @relationship_manager = ODFReport::RelationshipManager.new(@file)
     @image_manager = ODFReport::ImageManager.new(@relationship_manager, @file)
     @chart_manager = ODFReport::ChartManager.new(@relationship_manager, @file)
+    @table_manager = ODFReport::TableManager.new
 
     yield(self)
 
@@ -136,6 +137,8 @@ class Report
           @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
           @image_manager.find_image_ids(doc)
           @chart_manager.find_chart_ids(doc, filename) # Scan each chart
+          @table_manager.validate_row(doc, filename)
+
 
           @slides.each         { |s| s.replace!(doc) }
           @sections.each       { |s| s.replace!(doc) }

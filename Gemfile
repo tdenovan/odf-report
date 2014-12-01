@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'debugger'
+gem 'dentaku'
 
 group :development do
   gem "pry-rails"
