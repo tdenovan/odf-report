@@ -15,8 +15,9 @@ module ODFReport
       @name = @name.to_s
       @value = @value.to_s
 
-      doc.xpath("//w:default[@w:val='#{@name}']/ancestor::*[w:fldChar]/following-sibling::*[w:t]//w:t").first.inner_html = @value
-
+      doc.xpath("//w:default[@w:val='#{@name}']").each do |field|
+        field.xpath("ancestor::*[w:fldChar]/following-sibling::*/w:t").first.inner_html = @value
+      end
     end
   end
 end
