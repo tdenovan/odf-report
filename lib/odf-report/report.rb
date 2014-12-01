@@ -126,6 +126,10 @@ class Report
     @image_manager.add_existing_image(name, path)
   end
 
+  def add_variables(name, hash)
+    @table_manager.add_variables(name, hash)
+  end
+
   def generate(dest = nil)
 
     @file.update_content do |file|
