@@ -139,7 +139,6 @@ class Report
           @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
           @image_manager.find_image_ids(doc)
           @chart_manager.find_chart_ids(doc, filename) # Scan each chart
-          @table_manager.validate_row(doc, filename)
 
 
           @slides.each         { |s| s.replace!(doc) }
@@ -155,6 +154,7 @@ class Report
           @slides.each         { |s| s.remove!(doc) }
           @remove_tables.each  { |t| t.remove!(doc) }
 
+          @table_manager.validate_row(doc, filename)
         end
 
       end

@@ -20,23 +20,12 @@ module ODFReport
         row.xpath("descendant::*[w:t]//w:t").inner_html.scan(/\{\{.*\((.*)\)\}\}/).each do |arg| # Scan to see if there's a condition
           condition = $1.gsub(/&gt;/, '>').gsub(/&lt;/, '<') # Convert < and > signs
           if @calculator.evaluate condition # Evaluate Condition
-            row.xpath("*//w:t").each { |txt| txt.inner_html = txt.inner_html.gsub(/\{\{.*\}\}/, '').gsub(/\{\{.*/, '').gsub(/\}\}/, '') }
+            row.xpath("*//w:t").each { |txt| txt.inner_html = txt.inner_html.gsub(/\{\{.*\}\}/, '').gsub(/\{\{.*/, '').gsub(/\}\}/, '') } # Remove condition
           else
             row.remove # Remove Row
           end
         end
       end
-
-      # doc.xpath("//w:tbl//w:t").each do |txt| # Go through every table text
-      #   txt.inner_html.scan(/\{\{.*\((.*)\)\}\}/).each do |arg| # Scan to see if there's a condition
-      #     condition = $1.gsub(/&gt;/, '>').gsub(/&lt;/, '<') # Convert < and > signs
-      #     if @calculator.evaluate condition # Evaluate Condition
-      #       txt.inner_html = txt.inner_html.gsub(/\s*\{\{.*\}\}/, '') # Remove Condition
-      #     else
-      #       txt.xpath("ancestor::*[w:tc]").remove # Remove Row
-      #     end
-      #   end
-      # end
 
     end
 
