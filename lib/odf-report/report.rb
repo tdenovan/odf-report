@@ -42,6 +42,8 @@ class Report
     opts = {:name => field_tag, :value => value}
     field = Field.new(opts)
     @fields << field
+
+    @table_manager.add_variables(field_tag, value)
   end
 
   alias_method :add_header, :add_field
@@ -124,10 +126,6 @@ class Report
 
   def add_image(name, path)
     @image_manager.add_existing_image(name, path)
-  end
-
-  def add_variables(name, hash)
-    @table_manager.add_variables(name, hash)
   end
 
   def generate(dest = nil)
