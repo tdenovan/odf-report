@@ -12,11 +12,11 @@ module ODFReport
 
       return unless /word\/document/ === filename
 
-      @name = @name.to_s
-      @value = @value.to_s
+      name = "[#{@name.to_s.upcase}]"
+      value = @value.to_s
 
-      doc.xpath("//w:default[@w:val='#{@name}']").each do |field|
-        field.xpath("ancestor::*[w:fldChar]/following-sibling::*/w:t").first.inner_html = @value
+      doc.xpath("//w:default[@w:val='#{name}']").each do |field|
+        field.xpath("ancestor::*[w:fldChar]/following-sibling::*/w:t").first.inner_html = value
       end
     end
   end

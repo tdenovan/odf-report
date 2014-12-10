@@ -42,7 +42,6 @@ class Report
     opts = {:name => field_tag, :value => value}
     field = Field.new(opts)
     @fields << field
-
     @table_manager.add_variables(field_tag, value)
   end
 
@@ -58,6 +57,7 @@ class Report
     opts = {:name => field_tag, :value => value}
     text_field = TextField.new(opts)
     @text_fields << text_field
+    @table_manager.add_variables(field_tag, value)
   end
 
   def add_table(table_name, collection, opts={})
