@@ -24,9 +24,10 @@ module ODFReport
             row.xpath("*//w:t").each do |txt| # Remove condition
               active = true if txt.inner_html.include? "\{\{"
               next unless active
+              inner_html = txt.inner_html.clone
               txt.inner_html = txt.inner_html.gsub(/\{\{.*\}\}/, '').gsub(/\{\{.*/, '').gsub(/.*\}\}/, '')
               txt.inner_html = '' if whole_condition.include? txt.inner_html
-              break if txt.inner_html.include? "\}\}"
+              break if inner_html.include? "\}\}"
             end
           else
             row.remove # Remove Row
