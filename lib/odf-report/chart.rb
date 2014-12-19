@@ -410,6 +410,10 @@ class Chart
         max_min_temp = "<c:max val=\"#{max}\"/><c:min val=\"#{min}\"/>"
         tick_temp = "<c:majorUnit val=\"#{tick}\"/>"
 
+        doc.xpath("//c:valAx//c:max").remove
+        doc.xpath("//c:valAx//c:min").remove
+        doc.xpath("//c:valAx//c:majorUnit").remove
+
         doc.xpath("//c:valAx//c:scaling").first.add_child(max_min_temp)
         doc.xpath("//c:valAx").first.add_child(tick_temp)
 
