@@ -6,7 +6,10 @@ class Chart
   attr_accessor :name, :collection, :series, :title, :type, :legend, :labels, :file, :id, :target, :excel
 
   @@id_target = {}
-  @@name_id = {}
+  @@id_name = {}
+  @@id_name_xlsx = {}
+  @@chart_ids = {}
+
 
   def initialize(opts)
     @name       = opts[:name]
@@ -35,113 +38,107 @@ class Chart
     if /_rels\/document/ === filename # Look into _rels/document.xml.rels
 
       doc.xpath("//xmlns:Relationship").each do |rel|
-        @@id_target[rel.attr('Id')] = rel.attr('Target')
-      end
+        id = rel.attr('Id')
+        target = rel.attr('Target')
 
-    elsif /_rels\/chart/ === filename # Look into _rels/chart.xml.rels
-
-      chart_name = @name
-      chart_id = @@name_id[chart_name]
-      chart_target = @@id_target[chart_id]
-      return if chart_target.nil?
-      chart_target = chart_target.split("\/").last
-
-      if /#{Regexp.quote(chart_target)}/ === filename
-
-        target = doc.xpath("//xmlns:Relationship").first['Target']
-        current_path = "word" + target[2..-1]
-
-        excel_file_data = @file.read_file(current_path)
-        tmp_filename = "temp_#{current_path.split('/').last}"
-        ::File.open(tmp_filename, "wb") {|f| f.write(excel_file_data) } # TODO fix the temporary file to actually reference a temporary file path in the tmp folder
-
-
-        report = ODFReport::Report.new(tmp_filename) do |r|
-           r.add_spreadsheet(@name, @collection, :series => @series, :title => @title, :type => @type)
-        end
-
-        replacement_path = current_path.split('/').last
-
-        report.generate(replacement_path)
-
+        @@chart_ids[id] = {} if @@chart_ids[target].nil?
+        @@chart_ids[id].merge!({:target => target})
       end
 
     elsif /word\/document/ === filename # Look into word/document.xml
 
-      id = doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"})
-      @@name_id[@name] = id.attr('id').value unless id.empty?
+      ids = doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"})
+      return if ids.empty?
+
+      ids.map { |id| id.attributes['id'].value }.each do |id|
+        @@chart_ids[id] = {} if @@chart_ids[id].nil?
+        @@chart_ids[id].merge!({:name => @name})
+      end
+
       doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/ancestor::*[w:drawing]").remove if @collection.values.flatten.map {|v| v.abs}.sum.zero?
+
+    elsif /_rels\/chart/ === filename # Look into _rels/chart.xml.rels
+
+      return if @@chart_ids.values.select { |v| v[:name] == @name and /#{Regexp.quote(v[:target].split("\/").last)}/ === filename }.empty?
+
+      target = doc.xpath("//xmlns:Relationship").first['Target']
+      current_path = "word" + target[2..-1]
+
+      excel_file_data = @file.read_file(current_path)
+      tmp_filename = "temp_#{current_path.split('/').last}"
+      ::File.open(tmp_filename, "wb") {|f| f.write(excel_file_data) } # TODO fix the temporary file to actually reference a temporary file path in the tmp folder
+
+      report = ODFReport::Report.new(tmp_filename) do |r|
+         r.add_spreadsheet(@name, @collection, :series => @series, :title => @title, :type => @type)
+      end
+
+      replacement_path = current_path.split('/').last
+      report.generate(replacement_path)
 
     elsif /charts\/chart/ === filename # Look through chart.xml
 
-      return if @@id_target[@@name_id[@name]].nil?
-      if filename.include? @@id_target[@@name_id[@name]]
+      return if @@chart_ids.values.select { |v| v[:name] == @name and /#{Regexp.quote(v[:target])}/ === filename }.empty?
 
-        # function - work in progress
-        # fix_invalid_values
+      determine_type(doc)
 
-        determine_type(doc)
+      case @type
 
-        case @type
+      when 'pie', 'doughnut' # For Pie/Doughnut Charts
 
-        when 'pie', 'doughnut' # For Pie/Doughnut Charts
+        @series = [@series] unless @series.is_a? Array
+        @collection.each { |k, v| @collection[k] = [v] } unless @collection.values.first.is_a? Array
 
-          @series = [@series] unless @series.is_a? Array
-          @collection.each { |k, v| @collection[k] = [v] } unless @collection.values.first.is_a? Array
+        add_series(doc, @type)
 
-          add_series(doc, @type)
+        add_color(doc)
 
-          add_color(doc)
+        add_data(doc)
 
-          add_data(doc)
+        add_options(doc)
 
-          add_options(doc)
+      when 'waterfall' # For Waterfall charts
 
-        when 'waterfall' # For Waterfall charts
+        etl_waterfall(doc)
 
-          etl_waterfall(doc)
+        add_series(doc)
 
-          add_series(doc)
+        add_color(doc)
 
-          add_color(doc)
+        add_data(doc)
 
-          add_data(doc)
+        add_options(doc)
 
-          add_options(doc)
+      when 'bar', 'column' # For Bar/Column Charts
 
-        when 'bar', 'column' # For Bar/Column Charts
-
-          if @series.length < @collection.values.first.length
-            @series << rand(65..91).chr until @series.length == @collection.values.first.length
-          elsif @series.length > @collection.values.first.length
-            @series.pop until @series.length == @collection.values.first.length
-          end
-
-          add_series(doc)
-
-          add_color(doc)
-
-          add_data(doc)
-
-          add_options(doc)
-
-        when 'line' # For Line Charts
-
-          if @series.length < @collection.values.first.length
-            @series << rand(65..91).chr until @series.length == @collection.values.first.length
-          elsif @series.length > @collection.values.first.length
-            @series.pop until @series.length == @collection.values.first.length
-          end
-
-          add_series(doc, @type)
-
-          add_color(doc)
-
-          add_data(doc)
-
-          add_options(doc)
-
+        if @series.length < @collection.values.first.length
+          @series << rand(65..91).chr until @series.length == @collection.values.first.length
+        elsif @series.length > @collection.values.first.length
+          @series.pop until @series.length == @collection.values.first.length
         end
+
+        add_series(doc)
+
+        add_color(doc)
+
+        add_data(doc)
+
+        add_options(doc)
+
+      when 'line' # For Line Charts
+
+        if @series.length < @collection.values.first.length
+          @series << rand(65..91).chr until @series.length == @collection.values.first.length
+        elsif @series.length > @collection.values.first.length
+          @series.pop until @series.length == @collection.values.first.length
+        end
+
+        add_series(doc, @type)
+
+        add_color(doc)
+
+        add_data(doc)
+
+        add_options(doc)
 
       end
 
@@ -325,6 +322,7 @@ class Chart
     unless @f_size == :default
       @f_size = 8 if @f_size == :enabled
       font_temp = "<c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz=\"#{@f_size}00\"><a:latin typeface=\"Georgia\"/><a:cs typeface=\"Georgia\"/></a:defRPr></a:pPr><a:endParaRPr lang=\"en-US\"/></a:p></c:txPr>"
+      doc.xpath("//c:txPr").remove
       doc.xpath("//c:chart").first.add_next_sibling(font_temp)
     end
 
@@ -371,6 +369,7 @@ class Chart
 
         unless scale.nil?
           scale_temp = "<c:dispUnits><c:builtInUnit val=\"#{scale}\"/><c:dispUnitsLbl><c:layout/></c:dispUnitsLbl></c:dispUnits>"
+          doc.xpath("//c:valAx//c:dispUnits").remove
           doc.xpath("//c:valAx").first.add_child(scale_temp)
           doc.xpath("//c:valAx//c:dispUnitsLbl").remove if @y_axis == :noscale
         end
@@ -426,17 +425,25 @@ class Chart
       doc.xpath("//c:gapWidth").first['val'] = 50
 
       return if @type == 'waterfall'
+      doc.xpath("//c:barChart//c:overlap").remove
       doc.xpath("//c:barChart").first.add_child("<c:overlap val=\"-50\"/>")
 
     end
 
   end
 
-  def fix_invalid_values
-    @collection.values.each do |values|
-      values.map! { |value| value == nil ? 0 : value}.map! { |value| value.is_a? String ? value.to_i : value }
-    end
-  end
+  # def fix_invalid_values
+  #   @collection = @collection.map do |key, value|
+  #     key = 'Unknown' unless key.is_a? String
+
+  #     value = value.map { |v| v.is_a? Fixnum or v.is_a? Float or v.is_a? BigDecimal ? v : 0  } if value.is_a? Array
+  #     value = 0 unless value.is_a? Fixnum or value.is_a? Float or value.is_a? BigDecimal or value.is_a? Array
+
+  #     { key => value }
+  #   end
+
+  #   @collection = @collection.reduce Hash.new, :merge
+  # end
 
   def etl_waterfall(doc)
 
