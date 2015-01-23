@@ -5,11 +5,7 @@ class Chart
 
   attr_accessor :name, :collection, :series, :title, :type, :legend, :labels, :file, :id, :target, :excel
 
-  @@id_target = {}
-  @@id_name = {}
-  @@id_name_xlsx = {}
   @@chart_ids = {}
-
 
   def initialize(opts)
     @name       = opts[:name]
@@ -79,8 +75,6 @@ class Chart
 
       return if @@chart_ids.values.select { |v| v[:name] == @name and /#{Regexp.quote(v[:target])}/ === filename }.empty?
 
-      determine_type(doc)
-
       case @type
 
       when 'pie', 'doughnut' # For Pie/Doughnut Charts
@@ -147,16 +141,6 @@ class Chart
   end
 
   private
-
-  def determine_type(doc) # Still a prototype since sometimes the spreadsheet is done first
-
-    return unless @type.nil?
-    @type = 'bar' if doc.xpath("//c:barChart").any?
-    @type = 'pie' if doc.xpath("//c:pieChart").any?
-    @type = 'doughnut' if doc.xpath("//c:doughnutChart").any?
-    @type = 'waterfall' if doc.xpath("//c:grouping").first['val'] == 'clustered'
-
-  end
 
   def add_series(doc, type = 'bar')
 
@@ -431,19 +415,6 @@ class Chart
     end
 
   end
-
-  # def fix_invalid_values
-  #   @collection = @collection.map do |key, value|
-  #     key = 'Unknown' unless key.is_a? String
-
-  #     value = value.map { |v| v.is_a? Fixnum or v.is_a? Float or v.is_a? BigDecimal ? v : 0  } if value.is_a? Array
-  #     value = 0 unless value.is_a? Fixnum or value.is_a? Float or value.is_a? BigDecimal or value.is_a? Array
-
-  #     { key => value }
-  #   end
-
-  #   @collection = @collection.reduce Hash.new, :merge
-  # end
 
   def etl_waterfall(doc)
 
