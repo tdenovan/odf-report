@@ -8,7 +8,7 @@ module ODFReport
     end
 
     def add_variables(name, value)
-      @calculator.store(name.to_s => value.to_f)
+      @calculator.store(name.to_s => value.to_s.gsub(/[\D.-]/, '').to_f)
     end
 
     def validate_row(doc, filename)
