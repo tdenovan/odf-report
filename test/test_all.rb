@@ -57,25 +57,15 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
   r.add_field("TEXT_02", Faker::Company.catch_phrase)
 
   # Chart
-  r.add_title("TITLE_01", "New Chart Name")
-  r.add_series("QUANTITY", "Another Chart Name")
-  r.add_chart("CHART_01", alphabet)
+  r.add_chart("CHART_01", alphabet, :series => 'Pi', :title => 'Pie Chart')
 
-  r.add_title("TITLE_02", "Woot")
-  r.add_series("SOME TITLE", "Horray")
-  r.add_chart("CHART_02", things)
+  r.add_chart("CHART_02", things, :series => 'Phi')
 
-  r.add_series("SERIES_21", "Ababa")
-  r.add_series("SERIES_22", "Babab")
-  r.add_series("SERIES_23", "Cababa")
-  r.add_chart("CHART_03", bar)
+  r.add_chart("CHART_03", bar, :series => ['Abc', 'Def', 'Ghi'])
 
-  r.add_series("SERIES_31", "Dababa")
-  r.add_series("SERIES_32", "Ebabab")
-  r.add_series("SERIES_33", "Fababa")
-  r.add_chart("CHART_04", column)
+  r.add_chart("CHART_04", column, :series => ['Jkl'], :title => 'Colony')
 
-
+  r.add_chart('chart_05', things, :title => 'Things')
 
   # Image
   # r.add_image('IMAGE_01', File.join(Dir.pwd, 'test', 'templates', 'replace.jpeg'))
@@ -85,13 +75,13 @@ report = ODFReport::Report.new("test/templates/temp_all.docx") do |r|
   r.add_field("HEAD_01", 'ID1')
   r.add_field("HEAD_02", 'Name1')
   r.add_field("HEAD_03", 'Address1')
-  r.add_field("HEAD_04", 'City1')
+  # r.add_field("HEAD_04", 'City1')
 
   r.add_table("TABLE_01", @col1) do |t|
     t.add_column(:field_01, :id)
     t.add_column(:field_02, :name)
     t.add_column(:field_03, :address)
-    t.add_column(:field_04, :city)
+    # t.add_column(:field_04, :city)
   end
 
   r.add_field("HEAD_11", 'ID2')
