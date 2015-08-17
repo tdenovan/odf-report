@@ -1,4 +1,4 @@
-require 'debugger'
+# require 'debugger'
 
 module ODFReport
   class Field
