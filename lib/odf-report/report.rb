@@ -3,7 +3,8 @@ module ODFReport
 class Report
 
   FILES_TO_UPDATE = {
-    doc: ['word/document.xml', /chart/, /drawing/, RelationshipManager::RELATIONSHIP_FILE],
+    doc: ['word/document.xml', /chart/, /drawing/, 'document.xml.rels'],
+    ppt: [/slide/, /drawing/, 'presentation.xml.rels'],
     excel: ['xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml']
   }
 
@@ -13,6 +14,7 @@ class Report
 
     case ::File::extname(template_name)
       when '.docx' then @file_type = :doc
+      when '.pptx' then @file_type = :ppt
       when '.xlsx' then @file_type = :excel
     end
 
@@ -29,7 +31,7 @@ class Report
     @spreadsheets = []
 
     # Manager singleton classes
-    @relationship_manager = ODFReport::RelationshipManager.new(@file)
+    @relationship_manager = ODFReport::RelationshipManager.new(@file, @file_type)
     @image_manager = ODFReport::ImageManager.new(@relationship_manager, @file)
     @chart_manager = ODFReport::ChartManager.new(@relationship_manager, @file)
     @table_manager = ODFReport::TableManager.new

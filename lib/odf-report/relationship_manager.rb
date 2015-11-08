@@ -6,12 +6,17 @@ module ODFReport
   class RelationshipManager
 
     RELATIONSHIP_TYPES = {
-      image: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+      image: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+      slide: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide"
     }
-    RELATIONSHIP_FILE = "word/_rels/document.xml.rels"
+    RELATIONSHIP_FILES = {
+      doc: "word/_rels/document.xml.rels",
+      ppt: "ppt/_rels/presentation.xml.rels"
+    }
     ID_PREFIX = 'rId'
 
-    def initialize(file_instance)
+    def initialize(file_instance, file_type)
+      @file_type = file_type
       @current_id = 1000 # This is the next id that has not yet been assigned to a relationship element. Ideally this should be read this from the appropriate file
       @relationships = []
       @new_relationships = []
@@ -69,7 +74,7 @@ module ODFReport
 
     # Writes new relationships to the relationships document
     def write_new_relationships
-      data = @file.read_file(RELATIONSHIP_FILE)
+      data = @file.read_file(RELATIONSHIP_FILES[@file_type])
       doc = Nokogiri::XML(data)
       relationships = doc.xpath("//xmlns:Relationships").first
       return if relationships.nil?
@@ -83,7 +88,7 @@ module ODFReport
       end
 
       data.replace(doc.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML))
-      @file.output_stream.put_next_entry(RELATIONSHIP_FILE)
+      @file.output_stream.put_next_entry(RELATIONSHIP_FILES[@file_type])
       @file.output_stream.write data
     end
 
