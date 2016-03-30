@@ -20,8 +20,8 @@ class Chart
     @labels     = opts[:labels] || :default
     @x_axis     = opts[:x_axis] || :default
     @y_axis     = opts[:y_axis] || :default
-    @f_size     = opts[:f_size] || :default
-    @g_line     = opts[:g_line] || :default
+    @f_size     = opts[:font_size] || :default
+    @g_line     = opts[:grid_lines] || :default
 
     @file       = opts[:file]   || nil
     @id         = ''
