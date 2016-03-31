@@ -3,8 +3,8 @@ module ODFReport
 class Report
 
   FILES_TO_UPDATE = {
-    doc: ['word/document.xml', /chart/, /drawing/, 'document.xml.rels'],
-    ppt: [/slide/, /drawing/, 'presentation.xml.rels'],
+    doc: [/document.xml.rels/, /document.xml/, /drawing/, /chart/],
+    ppt: [/slide/, /drawing/, /presentation.xml.rels/],
     excel: ['xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml']
   }
 
@@ -138,7 +138,7 @@ class Report
         puts filename
 
         parse_document(txt) do |doc|
-          @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILE
+          @relationship_manager.parse_relationships(doc) if filename == RelationshipManager::RELATIONSHIP_FILES[:ppt] or filename == RelationshipManager::RELATIONSHIP_FILES[:doc]
           @image_manager.find_image_ids(doc)
           @chart_manager.find_chart_ids(doc, filename) # Scan each chart
 
@@ -187,4 +187,3 @@ private
 end
 
 end
-

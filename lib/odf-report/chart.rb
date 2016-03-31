@@ -42,7 +42,6 @@ class Chart
       end
 
     elsif /word\/document/ === filename # Look into word/document.xml
-
       ids = doc.xpath("//w:drawing//wp:docPr[@title='#{@name}']/following-sibling::*").xpath(".//c:chart", {'c' => "http://schemas.openxmlformats.org/drawingml/2006/chart"})
       return if ids.empty?
 

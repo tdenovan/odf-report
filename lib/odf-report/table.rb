@@ -68,6 +68,10 @@ class Table
     end
   end # replace_section
 
+  def remove_row!(row_text_content)
+    # TODO find the row containing that text content
+  end
+
 private
 
   def get_next_row

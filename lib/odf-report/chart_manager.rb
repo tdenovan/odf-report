@@ -46,7 +46,6 @@ module ODFReport
     def write_charts
 
       @file.read_files do |entry| # entry is a file entry in the zip
-
         next unless entry.name.include? CHART_DIR_NAME
         current_chart = @charts.select { |chart| entry.name == chart.excel }.first
 
@@ -60,7 +59,6 @@ module ODFReport
         elsif
 
           replacement_path = current_chart.excel.split('/').last
-
           data = ::File.read(replacement_path)
           @file.output_stream.put_next_entry(entry.name)
           @file.output_stream.write data

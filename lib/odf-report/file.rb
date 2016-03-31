@@ -17,25 +17,30 @@ module ODFReport
     end
 
     def update_files(*content_files, &block)
-      excluded_paths = [ImageManager::IMAGE_DIR_NAME, RelationshipManager::RELATIONSHIP_FILE, ChartManager::CHART_DIR_NAME]
 
       Zip::File.open(@template) do |file|
+        parsed_files = []
+        content_files.each do |content_file|
+          file.each do |entry|
+            if content_file === entry.name and not parsed_files.include?(entry.name)
+              parsed_files.push(entry.name)
+              entry.get_input_stream do |is|
+                data = is.sysread
+                yield data, entry.name
+
+                # Check if this is an excluded path - excluded paths (e.g. the Relationship file) are written separately
+                update_files_output_stream entry, data
+              end
+            end
+          end
+        end
 
         file.each do |entry|
-
-          # next if entry.directory?
-
-          entry.get_input_stream do |is|
-            data = is.sysread
-
-            if content_files.include?(entry.name) or content_files.select { |filename| filename.is_a? Regexp and filename =~ entry.name }.count >= 1
-              yield data, entry.name
-            end
-
-            # Check if this is an excluded path - excluded paths (e.g. the Relationship file) are written separately
-            unless excluded_paths.select { |path| entry.name.include? path }.count >= 1
-              @output_stream.put_next_entry(entry.name)
-              @output_stream.write data
+          unless parsed_files.include?(entry.name)
+            entry.get_input_stream do |is|
+              data = is.sysread
+              # Check if this is an excluded path - excluded paths (e.g. the Relationship file) are written separately
+              update_files_output_stream entry, data
             end
 
           end
@@ -44,6 +49,14 @@ module ODFReport
 
       end
 
+    end
+
+    def update_files_output_stream(entry, data)
+      excluded_paths = [ImageManager::IMAGE_DIR_NAME, RelationshipManager::RELATIONSHIP_FILES[:ppt], RelationshipManager::RELATIONSHIP_FILES[:doc], ChartManager::CHART_DIR_NAME]
+      unless excluded_paths.select { |path| entry.name.include? path }.count >= 1
+        @output_stream.put_next_entry(entry.name)
+        @output_stream.write data
+      end
     end
 
     # Updates a specific file in the zip
@@ -64,8 +77,8 @@ module ODFReport
 
     # Returns access to a file stream
     def read_files(&block)
-      Zip::File.open(@template) do |file|
-        file.each do |entry|
+      Zip::File.open(@template) do |files|
+        files.each do |entry|
           yield entry
         end
       end
