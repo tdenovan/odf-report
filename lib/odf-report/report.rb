@@ -4,7 +4,7 @@ class Report
 
   FILES_TO_UPDATE = {
     doc: [/document.xml.rels/, /document.xml/, /drawing/, /chart/],
-    ppt: [/slide/, /drawing/, /presentation.xml.rels/],
+    ppt: [/presentation.xml.rels/, /slide/, /drawing/],
     excel: ['xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml']
   }
 
@@ -161,7 +161,7 @@ class Report
 
       end
 
-      @relationship_manager.write_new_relationships if @file_type == :doc
+      @relationship_manager.write_new_relationships if @file_type == :doc or @file_type == :ppt
       @image_manager.write_images
       @chart_manager.write_charts # Modify xlsx and save altered, delete old file
 
