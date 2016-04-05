@@ -4,7 +4,7 @@ class Report
 
   FILES_TO_UPDATE = {
     doc: [/document.xml.rels/, /document.xml/, /drawing/, /chart/],
-    ppt: [/presentation.xml.rels/, /slide/, /drawing/],
+    ppt: [/presentation.xml.rels/, /slide.*\.xml$/, /drawing/],
     excel: ['xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml']
   }
 
@@ -33,6 +33,7 @@ class Report
     # Manager singleton classes
     @relationship_manager = ODFReport::RelationshipManager.new(@file, @file_type)
     @image_manager = ODFReport::ImageManager.new(@relationship_manager, @file)
+    @slide_manager = ODFReport::SlideManager.new(@relationship_manager, @file)
     @chart_manager = ODFReport::ChartManager.new(@relationship_manager, @file)
     @table_manager = ODFReport::TableManager.new
 
@@ -110,7 +111,7 @@ class Report
   # Added by tdenovan
   def add_slide(slide_name, collection, insert_before_slide, opts={})
     opts.merge!(name: slide_name, collection: collection, insert_before_slide: insert_before_slide)
-    slide = Slide.new(opts)
+    slide = Slide.new(opts, @slide_manager)
     @slides << slide
 
     yield(slide)
@@ -142,8 +143,7 @@ class Report
           @image_manager.find_image_ids(doc)
           @chart_manager.find_chart_ids(doc, filename) # Scan each chart
 
-
-          @slides.each         { |s| s.replace!(doc) }
+          @slides.each         { |s| s.replace!(doc) } if /slide8.xml$/ =~ filename
           @sections.each       { |s| s.replace!(doc) }
           @tables.each         { |t| t.replace!(doc) }
           @texts.each          { |t| t.replace!(doc) }
@@ -153,7 +153,7 @@ class Report
           @spreadsheets.each   { |c| c.replace!(doc, filename) } if @file_type == :excel # Extract chart from docx zip and store it locally
 
           # CHANGED by tdenovan. We need a special call to remove template slides, as it can't be done in the replace method as other slides might rely on the template slide
-          @slides.each         { |s| s.remove!(doc) }
+          # @slides.each         { |s| s.remove!(doc) } # TODO this needs to be called after we have iterated over all of the files first.
           @remove_tables.each  { |t| t.remove!(doc) }
 
           @table_manager.validate_row(doc, filename)

@@ -22,7 +22,9 @@ module ODFReport
         parsed_files = []
         content_files.each do |content_file|
           file.each do |entry|
-            if content_file === entry.name and not parsed_files.include?(entry.name)
+            file_matches_searched_file = content_file === entry.name
+            file_matches_searched_file = content_file =~ entry.name if file_matches_searched_file == false and content_file.is_a? Regexp
+            if file_matches_searched_file and not parsed_files.include?(entry.name)
               parsed_files.push(entry.name)
               entry.get_input_stream do |is|
                 data = is.sysread

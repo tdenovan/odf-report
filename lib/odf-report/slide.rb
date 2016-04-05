@@ -4,11 +4,12 @@ module ODFReport
     include Nested
     @@idx = 0
 
-    def initialize(opts)
+    def initialize(opts, slide_manager)
       @name             = opts[:name]
       @collection_field = opts[:collection_field]
       @collection       = opts[:collection]
       @insert_before_slide = opts[:insert_before_slide]
+      @slide_manager = slide_manager
 
       @fields = []
       @texts = []
@@ -18,8 +19,9 @@ module ODFReport
     end
 
     def replace!(doc, row = nil)
-
+      binding.pry
       return unless @slide_node = find_slide_node(doc)
+      binding.pry
       # TODO get anchor (i.e. slide that this one will be inserted prior to)
 
       @collection = get_collection_from_item(row, @collection_field) if row
@@ -51,7 +53,7 @@ module ODFReport
 
     def find_slide_node(doc)
 
-      slides = doc.xpath(".//text:slide[@text:name='#{@name}']")
+      slides = doc.xpath(".//xmlns:cSld[@name='#{@name}']")
 
       slides.empty? ? nil : slides.first
 
