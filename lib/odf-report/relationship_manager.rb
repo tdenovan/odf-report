@@ -13,6 +13,14 @@ module ODFReport
       doc: "word/_rels/document.xml.rels",
       ppt: "ppt/_rels/presentation.xml.rels"
     }
+    TARGET_EXTENSIONS = {
+      slide: 'xml',
+      image: 'png'
+    }
+    TARGET_DIRECTORIES = {
+      slide: 'slides',
+      image: 'media'
+    }
     ID_PREFIX = 'rId'
 
     def initialize(file_instance, file_type)
@@ -36,6 +44,11 @@ module ODFReport
         end
       end
     end
+    
+    # Gets a relation by its target
+    def get_relationship_by_target(target)
+      @relationships.select { |relationship| relationship[:target] == target }.first
+    end
 
     # Get relationship by id
     def get_relationship(id)
@@ -51,7 +64,7 @@ module ODFReport
     def create_target_and_id(type, path)
       @current_id += 1
       id = "#{ID_PREFIX}#{@current_id}"
-      target = "media/#{type.to_s}#{id}.png"
+      target = "#{TARGET_DIRECTORIES[type]}/#{type.to_s}#{id}.#{TARGET_EXTENSIONS[type]}"
       path = target if path.nil?
       @created_targets[path] = { target: target, id: id }
       return target, id

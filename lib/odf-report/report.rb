@@ -4,7 +4,7 @@ class Report
 
   FILES_TO_UPDATE = {
     doc: [/document.xml.rels/, /document.xml/, /drawing/, /chart/],
-    ppt: [/presentation.xml.rels/, /slide.*\.xml$/, /drawing/],
+    ppt: [/presentation.xml.rels/, /slides\/slide.*\.xml$/, /drawing/, /presentation.xml$/, /\[Content_Types\]/],
     excel: ['xl/tables/table1.xml', 'xl/worksheets/sheet1.xml', 'xl/sharedStrings.xml']
   }
 
@@ -143,7 +143,7 @@ class Report
           @image_manager.find_image_ids(doc)
           @chart_manager.find_chart_ids(doc, filename) # Scan each chart
 
-          @slides.each         { |s| s.replace!(doc) } if /slide8.xml$/ =~ filename
+          @slides.each         { |s| s.replace!(doc, nil, filename) } if /slides\/slide.*\.xml$/ =~ filename
           @sections.each       { |s| s.replace!(doc) }
           @tables.each         { |t| t.replace!(doc) }
           @texts.each          { |t| t.replace!(doc) }
@@ -153,7 +153,8 @@ class Report
           @spreadsheets.each   { |c| c.replace!(doc, filename) } if @file_type == :excel # Extract chart from docx zip and store it locally
 
           # CHANGED by tdenovan. We need a special call to remove template slides, as it can't be done in the replace method as other slides might rely on the template slide
-          # @slides.each         { |s| s.remove!(doc) } # TODO this needs to be called after we have iterated over all of the files first.
+          @slide_manager.update_presentation_file doc if /presentation.xml$/ =~ filename
+          @slide_manager.update_content_type_file doc if /\[Content_Types\]/ =~ filename
           @remove_tables.each  { |t| t.remove!(doc) }
 
           @table_manager.validate_row(doc, filename)
@@ -163,6 +164,7 @@ class Report
 
       @relationship_manager.write_new_relationships if @file_type == :doc or @file_type == :ppt
       @image_manager.write_images
+      @slide_manager.write_slides
       @chart_manager.write_charts # Modify xlsx and save altered, delete old file
 
       # Notify chart something of the altered file...

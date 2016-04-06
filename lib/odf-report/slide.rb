@@ -2,7 +2,7 @@ module ODFReport
 
   class Slide
     include Nested
-    @@idx = 0
+    @@idx = 1000
 
     def initialize(opts, slide_manager)
       @name             = opts[:name]
@@ -18,26 +18,20 @@ module ODFReport
 
     end
 
-    def replace!(doc, row = nil)
-      binding.pry
+    def replace!(doc, row = nil, slide_path = nil)
+      
       return unless @slide_node = find_slide_node(doc)
-      binding.pry
+      
       # TODO get anchor (i.e. slide that this one will be inserted prior to)
 
       @collection = get_collection_from_item(row, @collection_field) if row
 
-      @collection.each do |data_item|
+      new_slide = get_slide_node(slide_path)
 
-        new_slide = get_slide_node
-
-        @tables.each    { |t| t.replace!(new_slide, data_item) }
-        @sections.each  { |s| s.replace!(new_slide, data_item) }
-        @texts.each     { |t| t.replace!(new_slide, data_item) }
-        @fields.each    { |f| f.replace!(new_slide, data_item) }
-
-        @slide_node.before(new_slide)
-
-      end
+      @tables.each    { |t| t.replace!(new_slide, @collection) }
+      @sections.each  { |s| s.replace!(new_slide, @collection) }
+      @texts.each     { |t| t.replace!(new_slide, @collection) }
+      @fields.each    { |f| f.replace!(new_slide, @collection) }
 
       #CHANGED note the template node cannot be deleted here as it may be premature. If there are multiple calls to add_slide which rely on the same template, deleting it here would cause issues
 
@@ -52,19 +46,18 @@ module ODFReport
   private
 
     def find_slide_node(doc)
-
-      slides = doc.xpath(".//xmlns:cSld[@name='#{@name}']")
-
+      slides = doc.xpath(".//p:cSld[@name='#{@name}']")
       slides.empty? ? nil : slides.first
-
     end
 
-    def get_slide_node
-      node = @slide_node.dup
+    # @param old_slide_path is the path of the 
+    def get_slide_node(old_slide_path)
+      @@idx +=1
+      
+      node = @slide_manager.duplicate_slide old_slide_path, @@idx
 
-      name = node.get_attribute('text:name').to_s
-      @@idx ||=0; @@idx +=1
-      node.set_attribute('text:name', "#{name}_#{@idx}")
+      name = node.get_attribute('name').to_s
+      node.set_attribute('name', "#{name}_#{@@idx}")
 
       node
     end
