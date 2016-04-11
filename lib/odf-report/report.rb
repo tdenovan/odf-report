@@ -35,7 +35,7 @@ class Report
     @image_manager = ODFReport::ImageManager.new(@relationship_manager, @file)
     @slide_manager = ODFReport::SlideManager.new(@relationship_manager, @file)
     @chart_manager = ODFReport::ChartManager.new(@relationship_manager, @file)
-    @table_manager = ODFReport::TableManager.new
+    @table_manager = ODFReport::TableManager.new(@file_type)
 
     yield(self)
 
@@ -64,7 +64,7 @@ class Report
   end
 
   def add_table(table_name, collection, opts={})
-    opts.merge!(:name => table_name, :collection => collection)
+    opts.merge!(:name => table_name, :collection => collection, :file_type => @file_type)
     tab = Table.new(opts, @image_manager)
     @tables << tab
 
@@ -72,7 +72,7 @@ class Report
   end
 
   def remove_table(table_name, collection, opts={})
-    opts.merge!(:name => table_name, :collection => collection)
+    opts.merge!(:name => table_name, :collection => collection, :file_type => @file_type)
     tab = Table.new(opts, @image_manager)
     @remove_tables << tab
   end

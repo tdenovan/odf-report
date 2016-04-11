@@ -3,8 +3,13 @@ module ODFReport
 
   class TableManager
 
-    def initialize
+    def initialize(file_type)
       @calculator = Dentaku::Calculator.new
+      @file_type = file_type
+      case file_type
+        when :doc then @name_space = 'w'
+        when :ppt then @name_space = 'a'
+      end
     end
 
     def add_variables(name, value)
@@ -13,15 +18,15 @@ module ODFReport
 
     def validate_row(doc, filename)
 
-      return unless filename == 'word/document.xml' # Go through word/document.xml
+      return unless filename == 'word/document.xml' or filename =~ /slide.*\.xml/ # Go through word/document.xml
 
-      doc.xpath("//w:tr").each do |row|
-        row.xpath("descendant::*[w:t]//w:t").inner_html.scan(/(\{\{.*\((.*)\)\}\})/).each do |arg| # Scan to see if there's a condition
+      doc.xpath("//#{@name_space}:tr").each do |row|
+        row.xpath("descendant::*[#{@name_space}:t]//#{@name_space}:t").inner_html.scan(/(\{\{.*\((.*)\)\}\})/).each do |arg| # Scan to see if there's a condition
           whole_condition = $1
           condition = $2.gsub(/&gt;/, '>').gsub(/&lt;/, '<') # Convert < and > signs
           if @calculator.evaluate condition # Evaluate Condition
             active = false
-            row.xpath("*//w:t").each do |txt| # Remove condition
+            row.xpath("*//#{@name_space}:t").each do |txt| # Remove condition
               active = true if txt.inner_html.include? "\{\{"
               next unless active
               inner_html = txt.inner_html.clone

@@ -21,7 +21,7 @@ module ODFReport
 
     def add_table(table_name, collection_field, opts={})
       opts.merge!(:name => table_name, :collection_field => collection_field)
-      tab = Table.new(opts)
+      tab = Table.new(opts, nil)
       @tables << tab
 
       yield(tab)
@@ -46,7 +46,6 @@ module ODFReport
 
 
     def get_collection_from_item(item, collection_field)
-
       return item[collection_field] if item.is_a?(Hash)
 
       if collection_field.is_a?(Array)

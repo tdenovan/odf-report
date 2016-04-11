@@ -8,6 +8,11 @@ class Table
     @collection_field = opts[:collection_field]
     @collection       = opts[:collection]
     @image_manager    = image_manager
+    @file_type = opts[:file_type]
+    case @file_type
+      when :doc then @name_space = 'w'
+      when :ppt then @name_space = 'a'
+    end
 
     @fields = []
     @texts = []
@@ -22,31 +27,27 @@ class Table
 
   def replace!(doc, row = nil)
 
-    if doc.namespaces.include? 'xmlns:w' and doc.xpath("//w:document").any? # Look through document.xml
-
+    if @file_type == :doc and doc.namespaces.include? 'xmlns:w' and doc.xpath("//w:document").any? or# Look through document.xml
+       @file_type == :ppt and doc.namespaces.include? 'xmlns:a'
       return unless table = find_table_node(doc)
 
-      @template_rows = table.xpath(".//w:tr")
+      @template_rows = table.xpath(".//#{@name_space}:tr")
 
       # Disabling the below because it creates an odd effect on the table
       # @header = table.xpath("//w:tblHeader").empty? ? @header : false
 
       @collection = get_collection_from_item(row, @collection_field) if row
-
       if @skip_if_empty && @collection.empty?
         table.remove
         return
       end
-
       @collection.each do |data_item|
-
         new_node = get_next_row
         @tables.each    { |t| t.replace!(new_node, data_item) }
         @images.each    { |i| @image_manager.register_new_image(i.dup, new_node, data_item) }
         @texts.each     { |t| t.replace!(new_node, data_item) }
         @fields.each    { |f| f.replace!(new_node, data_item) }
         @charts.each    { |c| c.replace!(new_node, data_item) }
-
         table.add_child(new_node)
 
       end
@@ -95,11 +96,11 @@ private
   end
 
   def find_table_node(doc)
-
-    tables = doc.xpath("//w:tbl[w:tblPr[w:tblCaption[@w:val='#{@name}']]]")
-
+    case @file_type
+      when :doc then tables = doc.xpath("//w:tbl[w:tblPr[w:tblCaption[@w:val='#{@name}']]]")
+      when :ppt then tables = doc.xpath("//p:graphicFrame[p:nvGraphicFramePr[p:cNvPr[@title='#{@name}']]]/a:graphic/a:graphicData/a:tbl")
+    end
     tables.empty? ? nil : tables.first
-
   end
 
 end
