@@ -29,6 +29,7 @@ class Report
     @remove_slides = []
     @charts = []
     @spreadsheets = []
+    @remove_rows = []
 
     # Manager singleton classes
     @relationship_manager = ODFReport::RelationshipManager.new(@file, @file_type)
@@ -104,6 +105,12 @@ class Report
     @remove_sections << sec
   end
 
+  def remove_row(row_name, opts={})
+    opts.merge!(:name => row_name)
+    row = Row.new(opts)
+    @remove_rows << row
+  end
+
   # <<<<<<<<<<<<<<<<<<<
   # Changes by tdenovan
   # <<<<<<<<<<<<<<<<<<<
@@ -156,6 +163,7 @@ class Report
           @slide_manager.update_presentation_file doc if /presentation.xml$/ =~ filename
           @slide_manager.update_content_type_file doc if /\[Content_Types\]/ =~ filename
           @remove_tables.each  { |t| t.remove!(doc) }
+          @remove_rows.each { |r| r.remove!(doc) } if 'word/document.xml' === filename
 
           @table_manager.validate_row(doc, filename)
         end

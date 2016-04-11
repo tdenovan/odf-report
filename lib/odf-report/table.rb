@@ -26,16 +26,13 @@ class Table
   end
 
   def replace!(doc, row = nil)
-
-    if @file_type == :doc and doc.namespaces.include? 'xmlns:w' and doc.xpath("//w:document").any? or# Look through document.xml
-       @file_type == :ppt and doc.namespaces.include? 'xmlns:a'
+    if (@file_type == :doc and doc.namespaces.include? 'xmlns:w' and doc.xpath("//w:document").any?) or# Look through document.xml
+       (@file_type == :ppt and doc.namespaces.include? 'xmlns:a')
       return unless table = find_table_node(doc)
-
       @template_rows = table.xpath(".//#{@name_space}:tr")
 
       # Disabling the below because it creates an odd effect on the table
       # @header = table.xpath("//w:tblHeader").empty? ? @header : false
-
       @collection = get_collection_from_item(row, @collection_field) if row
       if @skip_if_empty && @collection.empty?
         table.remove
@@ -69,9 +66,6 @@ class Table
     end
   end # replace_section
 
-  def remove_row!(row_text_content)
-    # TODO find the row containing that text content
-  end
 
 private
 
